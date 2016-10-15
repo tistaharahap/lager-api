@@ -1,51 +1,23 @@
 from sanic import Sanic
-from sanic.response import json
-from qb.errors.errors import init_errors, UnauthorizedError
+from qb.errors import init_errors, UnauthorizedError
+from qb.auth import init_auth
+from qb.responses import init_responses
 import ujson
 
 
 app = Sanic(__name__)
 init_errors(app=app)
-
-
-@app.middleware('request')
-async def authorize_request(request):
-    token = request.headers.get('X-Access-Token')
-    if not token:
-        raise UnauthorizedError('All requests must be set with X-Access-Token header')
-
-
-@app.middleware('response')
-async def format_response(request, response):
-    status = response.get('status')
-    status = status if status else 200
-    
-    message = response.get('message')
-    message = message if message else ''
-
-    headers = response.get('headers')
-
-    data = response.get('data')
-
-    response = {
-        'status': status,
-        'message': message,
-        'data': data
-    }
-
-    return json(response, 
-                status=status,
-                headers=headers)
+init_auth(app=app,
+          error=UnauthorizedError)
+init_responses(app=app)
 
 
 @app.route('/')
 async def root(request):
-    return dict(data={'hello': 'world'},
-                message='ok',
-                status=200)
+    return dict(data={'hello': 'world'})
 
 
-@app.route('/v1/events', methods=['GET', 'POST'])
+@app.route('/v1/events', methods=['POST', 'GET'])
 async def acta(request):
     data = {
         "actor": {

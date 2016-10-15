@@ -1,1 +1,4 @@
 git+https://github.com/channelcat/sanic/
+gremlinpy
+redis
+hiredis

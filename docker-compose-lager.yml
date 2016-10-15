@@ -1,0 +1,39 @@
+titan_server:
+  image: soloman1124/dynamodb-titan
+  links:
+    - dynamodb
+  environment:
+    - DYNAMODB_ENDPOINT=http://dynamodb:8000
+  ports:
+    - 8182:8182
+dynamodb:
+  image: peopleperhour/dynamodb:latest
+  volumes_from:
+    - dynamodb_data
+  ports:
+    - 8000:8000
+  entrypoint:
+    - java
+    - -Djava.library.path=.
+    - -jar
+    - DynamoDBLocal.jar
+    - -dbPath
+    - /var/dynamodb_local
+    - -port
+    - "8000"
+redis:
+  image: redis
+  volumes_from:
+    - redis_data
+  ports:
+    - 6379:6379
+dynamodb_data:
+  image: peopleperhour/dynamodb:latest
+  volumes:
+    - ./.dynamodb_wd:/var/dynamodb_local
+  entrypoint: /bin/true
+redis_data:
+  image: redis
+  volumes:
+    - ./.redis_data:/data
+  entrypoint: /bin/true
