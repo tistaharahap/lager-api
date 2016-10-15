@@ -6,7 +6,7 @@ AUTH_SET_NAME = 'lager-tokens'
 
 def init_auth(app, error):
     @app.middleware('request')
-    def authorize_request(request):
+    async def authorize_request(request):
         token = request.headers.get('X-Access-Token')
         if not token:
             raise error('All requests must be set with X-Access-Token header')

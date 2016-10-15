@@ -3,7 +3,7 @@ from sanic.response import json
 
 def init_responses(app):
     @app.middleware('response')
-    def format_response(request, response):
+    async def format_response(request, response):
         status = response.get('status')
         status = status if status else 200
         

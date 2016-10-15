@@ -12,7 +12,7 @@ class UnauthorizedError(SanicException):
 
 def init_errors(app):
     @app.exception(UnauthorizedError)
-    def handle_error(request, exception):
+    async def handle_error(request, exception):
         response = {
             'status': exception.status_code,
             'message': u'{}'.format(exception),
