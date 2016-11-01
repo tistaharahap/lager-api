@@ -9,10 +9,11 @@ class TiketDotComFlightProvider(object):
         self.token = token
 
     def search(self, origin, destination, departure_date, **kwargs):
-        parameters = self._build_search_parameters(origin, destination, departure_date, kwargs)
+        parameters = self._build_search_parameters(origin, destination, departure_date, **kwargs)
 
         response = requests.get(self._build_url('/search/flight'),
                                 params=parameters)
+        print(response.text)
         
         return response.json()
 
@@ -37,4 +38,4 @@ class TiketDotComFlightProvider(object):
         return '%s%s' % (self.base_url, uri)
 
 
-BaseFlightSearch.register(TiketDotComFlightProvider)
+# BaseFlightSearch.register(TiketDotComFlightProvider)

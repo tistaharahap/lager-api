@@ -4,6 +4,7 @@ from qb.auth import init_auth
 from qb.responses import init_responses
 from qb.acta import Verbs
 from qb.articles import get_es_connection, Article
+from qb.flights.tiket import TiketDotComFlightProvider
 import ujson
 
 
@@ -31,9 +32,17 @@ async def acta(request):
         "contents": []
     }
 
-    es_conn = get_es_connection(hosts=ES_HOSTS)
-    results = Article.geosearch(location=dict(lat=-6.123981, lon=106.123123))
+    # es_conn = get_es_connection(hosts=ES_HOSTS)
+    # results = Article.geosearch(location=dict(lat=-6.123981, lon=106.123123))
+    tickets = TiketDotComFlightProvider(base_url='http://api-sandbox.tiket.com', token=TIKET_API_KEY)
+    results = {}
     
-    print(results)
+    got_update = False
+    while not got_update:
+        results = tickets.search(origin='CGK',
+                                 destination='DPS',
+                                 departure_date='2016-11-05')
+        
+        got_update = True
 
     return dict(data=data)
