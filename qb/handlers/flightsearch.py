@@ -44,7 +44,7 @@ async def get_destination_fares(origin_airport, destination_airport, dates, pass
     return result
 
 
-async def parse_destinations(origin_airport, airports, dates, passengers, tiketdotcom_provider):
+async def parse_destinations(origin_airport, airports, dates, passengers, budget, tiketdotcom_provider):
     result = []
 
     outbound_date = dates.get('outbound')
@@ -148,7 +148,13 @@ async def parse_destinations(origin_airport, airports, dates, passengers, tiketd
             'price_total': outbound[0].get('prices').get('adult') + inbound[0].get('prices').get('adult')
         })
 
-    return sorted(result, key=itemgetter('price_total'))
+    # Sort by cheapest price
+    result = sorted(result, key=itemgetter('price_total'))
+
+    # Filter out prices that are 20% in excess
+    result = filter(lambda row: row.get('price_total') <= int(float(budget) * 1.2), result)
+
+    return result
 
 
 async def handle_flight_search_with_budget(request):
@@ -169,11 +175,11 @@ async def handle_flight_search_with_budget(request):
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
     # Nearest Airport for Origin
-    origin_airport = Airport.get_nearest_airport(location=location)
+    origin_airport = await Airport.get_nearest_airport(location=location)
 
     # Get destination airports
-    airports = Airport.geosearch(location=location,
-                                 budget=budget)
+    airports = await Airport.geosearch(location=location,
+                                       budget=budget)
 
     tiketdotcom_provider = TiketDotComFlightProvider(base_url=config.get('tiketdotcom').get('base_url'),
                                                      token=config.get('tiketdotcom').get('token'))
@@ -182,6 +188,7 @@ async def handle_flight_search_with_budget(request):
                                             airports=airports,
                                             dates=dates,
                                             passengers=passengers,
+                                            budget=budget,
                                             tiketdotcom_provider=tiketdotcom_provider)
 
     return dict(data=destinations)

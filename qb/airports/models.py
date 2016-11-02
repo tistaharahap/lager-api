@@ -16,12 +16,12 @@ class Airport(DocType):
         doc_type = 'airport'
         index = 'airports'
 
-    def save(self, **kwargs):
+    async def save(self, **kwargs):
         self.created_at = datetime.now()
         return super().save(**kwargs)
 
     @classmethod
-    def get_nearest_airport(cls, location):
+    async def get_nearest_airport(cls, location):
         sorter = {
             '_geo_distance': {
                 'location': location,
@@ -32,10 +32,10 @@ class Airport(DocType):
 
         results = Airport().search().sort(sorter).execute()
 
-        return [row.to_dict() for row in results][0]
+        return results[0].to_dict()
 
     @classmethod
-    def geosearch(cls, location, budget):
+    async def geosearch(cls, location, budget):
         distances = get_distances_from_budget(budget=budget)
 
         filter_args = {
