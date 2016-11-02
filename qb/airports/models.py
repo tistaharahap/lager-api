@@ -21,6 +21,20 @@ class Airport(DocType):
         return super().save(**kwargs)
 
     @classmethod
+    def get_nearest_airport(cls, location):
+        sorter = {
+            '_geo_distance': {
+                'location': location,
+                'order': 'asc',
+                'unit': 'km'
+            }
+        }
+
+        results = Airport().search().sort(sorter).execute()
+
+        return [row.to_dict() for row in results][0]
+
+    @classmethod
     def geosearch(cls, location, budget):
         distances = get_distances_from_budget(budget=budget)
 
