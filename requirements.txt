@@ -1,4 +1,4 @@
-git+https://github.com/channelcat/sanic/
+sanic
 gremlinpy
 redis
 hiredis
@@ -7,3 +7,4 @@ elasticsearch>=2.0.0,<3.0.0
 elasticsearch-dsl>=2.0.0,<3.0.0
 awesome-slugify
 objectpath
+voluptuous

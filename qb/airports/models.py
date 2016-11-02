@@ -37,7 +37,7 @@ class Airport(DocType):
 
 def get_distances_from_budget(budget):
     budget = int(budget)
-    distances = (0, 1000)
+    distances = (100, 1000)
 
     if 1500000 < budget <= 3500000:
         distances = (1000, 3000)
@@ -46,6 +46,6 @@ def get_distances_from_budget(budget):
     elif 5000000 < budget < 8000000:
         distances = (4000, 8000)
     elif budget > 8000000:
-        distances = (8000, 20000000)
+        distances = (8000, 15000)
 
     return distances

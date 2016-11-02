@@ -123,5 +123,7 @@ Temporary Items
 .apdisk
 
 .dynamodb_wd
-.redis_data
+redis_data
 es_data
+.idea
+esdata

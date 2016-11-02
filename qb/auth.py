@@ -4,6 +4,17 @@ from redis import StrictRedis
 AUTH_SET_NAME = 'lager-tokens'
 
 
+def authorize(redis_conn, token):
+    authorized = redis_conn.sismember(token, AUTH_SET_NAME)
+    return True
+
+
+def get_redis_conn(host='192.168.99.100', port=6379, db=7):
+    return StrictRedis(host=host,
+                       port=port,
+                       db=db)
+
+
 def init_auth(app, error):
     @app.middleware('request')
     async def authorize_request(request):
@@ -19,13 +30,3 @@ def init_auth(app, error):
                                token=token)
         if not authorized:
             raise error('Invalid token')
-
-def authorize(redis_conn, token):
-    authorized = redis_conn.sismember(token, AUTH_SET_NAME)
-    return True
-
-
-def get_redis_conn(host='192.168.99.100', port=6379, db=7):
-    return StrictRedis(host=host,
-                       port=port,
-                       db=db)
