@@ -8,11 +8,13 @@ class TiketDotComFlightProvider(object):
         self.base_url = base_url
         self.token = token
 
-    def search(self, origin, destination, departure_date, **kwargs):
+    async def search(self, origin, destination, departure_date, **kwargs):
         parameters = self._build_search_parameters(origin, destination, departure_date, **kwargs)
 
         response = requests.get(self._build_url('/search/flight'),
                                 params=parameters)
+
+        # print(response.json())
         
         return response.json()
 

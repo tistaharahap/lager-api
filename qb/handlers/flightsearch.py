@@ -26,20 +26,20 @@ def get_next_weekend():
 
 
 async def get_destination_fares(origin_airport, destination_airport, dates, passengers, tiketdotcom_provider):
-    result = tiketdotcom_provider.search(origin=origin_airport,
-                                         destination=destination_airport,
-                                         departure_date=dates.get('outbound'),
-                                         ret_date=dates.get('inbound'),
-                                         adult=passengers.get('adults'))
+    result = await tiketdotcom_provider.search(origin=origin_airport,
+                                               destination=destination_airport,
+                                               departure_date=dates.get('outbound'),
+                                               ret_date=dates.get('inbound'),
+                                               adult=passengers.get('adults'))
     
     # Hey Tiket, you could design a better API?
     asyncio.sleep(10)
 
-    result = tiketdotcom_provider.search(origin=origin_airport,
-                                         destination=destination_airport,
-                                         departure_date=dates.get('outbound'),
-                                         ret_date=dates.get('inbound'),
-                                         adult=passengers.get('adults'))
+    result = await tiketdotcom_provider.search(origin=origin_airport,
+                                               destination=destination_airport,
+                                               departure_date=dates.get('outbound'),
+                                               ret_date=dates.get('inbound'),
+                                               adult=passengers.get('adults'))
 
     return result
 
@@ -74,33 +74,10 @@ async def parse_destinations(origin_airport, airports, dates, passengers, budget
         }
 
     def _format_fares(departures, returns):
-        cheapest_price = 100000000
-        selected_departure = {}
-
-        for row in departures.get('result'):
-            price = int(float(row.get('price_value')))
-            
-            if price > cheapest_price:
-                continue
-
-            cheapest_price = price
-
-            selected_departure = _assign_flight(row)
-
-        cheapest_price = 100000000
-        selected_return = {}
+        departures = sorted([_assign_flight(row) for row in departures.get('result')], key=lambda e: e['prices']['adult'])
+        returns = sorted([_assign_flight(row) for row in returns.get('result')], key=lambda e: e['prices']['adult'])
         
-        for row in returns.get('result'):
-            price = int(float(row.get('price_value')))
-            
-            if price > cheapest_price:
-                continue
-
-            cheapest_price = price
-
-            selected_return = _assign_flight(row)
-
-        return (selected_departure, selected_return)
+        return (departures, returns)
 
     def _get_content_from_destination(airport):
         return {
@@ -136,23 +113,21 @@ async def parse_destinations(origin_airport, airports, dates, passengers, budget
         inbound = []
         content = _get_content_from_destination(airport=airport)
 
-        (departures, returns) = _format_fares(departures, returns)
-
-        outbound.append(departures)
-        inbound.append(returns)
+        (outbound, inbound) = _format_fares(departures, returns)
+        airports = {
+            'origin': origin_airport,
+            'destination': airport
+        }
 
         result.append({
             'contents': content,
             'outbound': outbound,
             'inbound': inbound,
-            'price_total': outbound[0].get('prices').get('adult') + inbound[0].get('prices').get('adult')
+            'airports': airports
         })
 
-    # Sort by cheapest price
-    result = sorted(result, key=itemgetter('price_total'))
-
-    # Filter out prices that are 20% in excess
-    result = filter(lambda row: row.get('price_total') <= int(float(budget) * 1.2), result)
+    # Filter out prices that are more than 20% in excess or less
+    #result = filter(lambda row: int(float(budget) * 0.7) <= row.get('price_total') <= int(float(budget) * 1.2), result)
 
     return result
 
