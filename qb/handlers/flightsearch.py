@@ -130,6 +130,8 @@ async def parse_destinations(origin_airport, airports, dates, passengers, budget
     # Filter out prices that are more than 20% in excess or less
     result = filter(lambda row: int(float(budget) * 0.7) <= row.get('cheapest') <= int(float(budget) * 1.2), result)
 
+    result = sorted(result, key=lambda r: r.get('cheapest'))
+
     return result
 
 
