@@ -13,8 +13,6 @@ class TiketDotComFlightProvider(object):
 
         response = requests.get(self._build_url('/search/flight'),
                                 params=parameters)
-
-        # print(response.json())
         
         return response.json()
 
