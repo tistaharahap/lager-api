@@ -12,6 +12,9 @@ class Airport(DocType):
 
     location = GeoPoint(lat_lon=True)
 
+    description = String(analyzer='snowball')
+    wikipedia_url = String(analyzer='snowball')
+
     class Meta:
         doc_type = 'airport'
         index = 'airports'

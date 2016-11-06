@@ -2,6 +2,18 @@ from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
 import json
 import objectpath
+import requests
+
+
+def get_geonames(city):
+    url = u'http://api.geonames.org/wikipediaSearchJSON?q=%s&maxRows=10&username=tistaharahap' % (city)
+    r = requests.get(url)
+
+    results = r.json().get('geonames')
+    if not results or len(results) == 0:
+        return None
+
+    return results[0]
 
 
 def process_airports(tiket_airports):
@@ -38,13 +50,17 @@ def process_airports(tiket_airports):
             if not location.get('lat') or not location.get('lon'):
                 continue
 
+            geonames = get_geonames(tiket_airport.get('location_name'))
+
             print('Airport: %s' % (tiket_airport.get('airport_code')))
             airport = Airport(name=tiket_airport.get('airport_name'),
                               area_name=tiket_airport.get('location_name'),
                               country=tiket_airport.get('country_name'),
                               iata_code=tiket_airport.get('airport_code'),
                               iata_country_code=iata_country_code,
-                              location=location)
+                              location=location,
+                              description=geonames.get('summary') if geonames else '',
+                              wikipedia_url=geonames.get('wikipediaUrl') if geonames else '')
             airport.save()
 
             print(airport.to_dict())
