@@ -2,7 +2,7 @@ from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
 
 
-def handle_airport_search(request):
+async def handle_airport_search(request):
     q = request.json.get('meta').get('q')
 
     # Get ES Connection
