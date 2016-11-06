@@ -15,7 +15,7 @@ init_responses(app=app)
 TIKET_API_KEY = '210af2db93efbc0538b8c575e7f5cb2bb396dd31'
 TIKET_BASE_URL = 'http://api-sandbox.tiket.com'
 
-ES_HOSTS = ['127.0.0.1']
+ES_HOSTS = ['api.travelonbudget.co']
 
 print('Serving lager..')
 

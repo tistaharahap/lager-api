@@ -33,7 +33,7 @@ async def get_destination_fares(origin_airport, destination_airport, dates, pass
                                                adult=passengers.get('adults'))
     
     # Hey Tiket, you could design a better API?
-    asyncio.sleep(10)
+    asyncio.sleep(15)
 
     result = await tiketdotcom_provider.search(origin=origin_airport,
                                                destination=destination_airport,

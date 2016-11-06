@@ -15,11 +15,13 @@ class Airport(DocType):
     description = String(analyzer='snowball')
     wikipedia_url = String(analyzer='snowball')
 
+    image = String(analyzer='snowball')
+
     class Meta:
         doc_type = 'airport'
         index = 'airports'
 
-    async def save(self, **kwargs):
+    def save(self, **kwargs):
         self.created_at = datetime.now()
         return super().save(**kwargs)
 
@@ -43,6 +45,8 @@ class Airport(DocType):
         }
 
         results = Airport().search().sort(sorter).execute()
+        if not results:
+            return None
 
         return results[0].to_dict()
 
