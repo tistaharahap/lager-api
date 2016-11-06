@@ -9,4 +9,4 @@ def handle_airport_search(request):
     config = request.json.get('config')
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
-    return Airport.get_suggestions(search_phrase=q)
+    return dict(data=Airport.get_suggestions(search_phrase=q))
