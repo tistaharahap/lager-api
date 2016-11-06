@@ -21,6 +21,15 @@ class Airport(DocType):
         return super().save(**kwargs)
 
     @classmethod
+    async def get_suggestions(cls, search_phrase):
+        term = {
+            'field': 'area_name'
+        }
+        results = Airport().search().suggest('airport_suggestions', search_phrase, term=term).execute()
+
+        return results
+
+    @classmethod
     async def get_nearest_airport(cls, location):
         sorter = {
             '_geo_distance': {
