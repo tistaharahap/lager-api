@@ -27,7 +27,7 @@ class Airport(DocType):
         }
         results = Airport().search().suggest('airport_suggestions', search_phrase, term=term).execute()
 
-        return results
+        return [result.to_dict() for result in results]
 
     @classmethod
     async def get_nearest_airport(cls, location):
