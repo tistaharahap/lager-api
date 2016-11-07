@@ -16,7 +16,6 @@ Verbs = {
                 'currency',
                 'number',
                 'origin',
-                'dates',
                 'passengers'
             ]
         },

@@ -22,14 +22,14 @@ def get_next_weekend():
 
     next_sunday = next_friday + datetime.timedelta(2)
 
-    return (next_friday, next_sunday)
+    return (str(next_friday), str(next_sunday))
 
 
-async def get_destination_fares(origin_airport, destination_airport, dates, passengers, tiketdotcom_provider):
+async def get_destination_fares(origin_airport, destination_airport, outbound_date, inbound_date, passengers, tiketdotcom_provider):
     result = await tiketdotcom_provider.search(origin=origin_airport,
                                                destination=destination_airport,
-                                               departure_date=dates.get('outbound'),
-                                               ret_date=dates.get('inbound'),
+                                               departure_date=outbound_date,
+                                               ret_date=inbound_date,
                                                adult=passengers.get('adults'))
     
     # Hey Tiket, you could design a better API?
@@ -37,8 +37,8 @@ async def get_destination_fares(origin_airport, destination_airport, dates, pass
 
     result = await tiketdotcom_provider.search(origin=origin_airport,
                                                destination=destination_airport,
-                                               departure_date=dates.get('outbound'),
-                                               ret_date=dates.get('inbound'),
+                                               departure_date=outbound_date,
+                                               ret_date=inbound_date,
                                                adult=passengers.get('adults'))
 
     return result
@@ -47,8 +47,11 @@ async def get_destination_fares(origin_airport, destination_airport, dates, pass
 async def parse_destinations(origin_airport, airports, dates, passengers, budget, tiketdotcom_provider):
     result = []
 
-    outbound_date = dates.get('outbound')
-    inbound_date = dates.get('inbound')
+    try:
+        outbound_date = dates.get('outbound')
+        inbound_date = dates.get('inbound')
+    except AttributeError:
+        (outbound_date, inbound_date) = get_next_weekend()
 
     def _assign_flight(row):
         return {
@@ -100,7 +103,8 @@ async def parse_destinations(origin_airport, airports, dates, passengers, budget
 
         fares = await get_destination_fares(origin_airport=origin_airport.get('iata_code'),
                                             destination_airport=iata_code,
-                                            dates=dates,
+                                            outbound_date=outbound_date,
+                                            inbound_date=inbound_date,
                                             passengers=passengers,
                                             tiketdotcom_provider=tiketdotcom_provider)
         
