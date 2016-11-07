@@ -1,4 +1,4 @@
-from elasticsearch_dsl import DocType, String, Date, Boolean, GeoPoint, analyzer
+from elasticsearch_dsl import DocType, String, Date, Boolean, GeoPoint, analyzer, Completion
 from datetime import datetime
 
 
@@ -17,6 +17,8 @@ class Airport(DocType):
 
     image = String(analyzer='snowball')
 
+    area_name_suggest = Completion(payloads=True)
+
     class Meta:
         doc_type = 'airport'
         index = 'airports'
@@ -30,7 +32,7 @@ class Airport(DocType):
         term = {
             'field': 'area_name'
         }
-        results = Airport().search().suggest('airport_suggestions', search_phrase, term=term).execute()
+        results = Airport().search().suggest('airport_suggestions', search_phrase, phrase=term).execute()
 
         return [result.to_dict() for result in results]
 
