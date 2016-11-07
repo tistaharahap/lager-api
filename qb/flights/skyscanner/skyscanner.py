@@ -13,6 +13,14 @@ async def find_destination(dest_id, places):
             return place
 
 
+def get_referral_link(token, origin, destination, departure_date, returning_date):
+    '''
+    http://partners.api.skyscanner.net/apiservices/referral/v1.0/GB/GBP/en-GB/EDI/CDG/2014-12-12/2014-12-20?apiKey=prtl674938798674
+    '''
+
+    return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin.get('iata_code'), destination, departure_date, returning_date, token) 
+
+
 async def search_flights(token, origin, destination, departure_date, returning_date, budget):
     url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin.get('iata_code'), destination, departure_date, returning_date, token)
 
@@ -60,7 +68,10 @@ async def search_flights(token, origin, destination, departure_date, returning_d
         inbound_carrier = await find_carrier(inbound_carrier_ids[0], carriers)
 
         origin_airport = inbound_leg.get('DestinationId')
+        origin_airport = await find_destination(origin_airport, places)
+
         destination_airport = outbound_leg.get('DestinationId')
+        destination_airport = await find_destination(destination_airport, places)
 
         destination = {
             'outbound': {
@@ -72,10 +83,10 @@ async def search_flights(token, origin, destination, departure_date, returning_d
                 'airline': inbound_carrier.get('Name')
             },
             'airports': {
-                'origin': await find_destination(origin_airport, places),
-                'destination': await find_destination(destination_airport, places)
+                'origin': origin_airport,
+                'destination': destination_airport
             },
-            'contents': {},
+            'referral_link': get_referral_link(token, origin, destination_airport.get('IataCode'), departure_date, returning_date),
             'cheapest': quote.get('MinPrice')
         }
 
