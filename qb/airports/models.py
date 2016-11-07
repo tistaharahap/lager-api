@@ -30,9 +30,9 @@ class Airport(DocType):
     @classmethod
     async def get_suggestions(cls, search_phrase):
         term = {
-            'field': 'area_name'
+            'field': 'area_name_suggest'
         }
-        results = Airport().search().suggest('airport_suggestions', search_phrase, phrase=term).execute()
+        results = Airport().search().suggest('airport_suggestions', search_phrase, completion=term).execute()
 
         return [result.to_dict() for result in results]
 
