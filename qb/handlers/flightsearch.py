@@ -40,9 +40,9 @@ async def get_content_for_quotes(quotes):
         destination = await Airport.get_airport_by_iata_code(iata_code=quote['airports']['destination']['iata_code'])
 
         quote['contents'] = {
-            'picture': destination.get('image'),
-            'description': destination.get('description'),
-            'wikipedia_url': 'http://%s' % destination.get('wikipedia_url')
+            'picture': destination.get('image') if destination else '',
+            'description': destination.get('description') if destination else '',
+            'wikipedia_url': 'http://%s' % destination.get('wikipedia_url') if destination else ''
         }
 
     return quotes

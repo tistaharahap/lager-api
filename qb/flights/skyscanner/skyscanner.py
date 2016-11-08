@@ -36,8 +36,8 @@ async def search_flights(token, origin, destination, departure_date, returning_d
     quotes = json.get('Quotes')
     quotes = sorted(quotes, key=lambda e: e.get('MinPrice'))
 
-    min_price = int(float(budget) * 0.7)
-    max_price = int(float(budget) * 1.2)
+    min_price = int(float(budget) * 0.5)
+    max_price = int(float(budget) * 1.5)
 
     quotes = filter(lambda q: min_price <= q.get('MinPrice') <= max_price, quotes)
     json['Quotes'] = quotes
