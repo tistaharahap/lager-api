@@ -38,7 +38,6 @@ async def get_content_for_quotes(quotes):
         quote['airports']['origin'] = normalize_airport(quote['airports']['origin'])
 
         destination = await Airport.get_airport_by_iata_code(iata_code=quote['airports']['destination']['iata_code'])
-        print(destination)
 
         quote['contents'] = {
             'picture': destination.get('image'),
