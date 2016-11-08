@@ -28,6 +28,14 @@ class Airport(DocType):
         return super().save(**kwargs)
 
     @classmethod
+    async def get_airport_by_iata_code(cls, iata_code):
+        results = Airport().search().query('match', iata_code=iata_code).execute()
+        if not results:
+            return None
+
+        return results[0].to_dict()
+
+    @classmethod
     async def get_suggestions(cls, search_phrase):
         term = {
             'field': 'area_name_suggest'
