@@ -14,14 +14,10 @@ async def find_destination(dest_id, places):
 
 
 def get_referral_link(token, origin, destination, departure_date, returning_date):
-    '''
-    http://partners.api.skyscanner.net/apiservices/referral/v1.0/GB/GBP/en-GB/EDI/CDG/2014-12-12/2014-12-20?apiKey=prtl674938798674
-    '''
-
     return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin.get('iata_code'), destination, departure_date, returning_date, token) 
 
 
-async def search_flights(token, origin, destination, departure_date, returning_date, budget):
+async def search_flights(token, origin, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
     url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin.get('iata_code'), destination, departure_date, returning_date, token)
 
     headers = {
