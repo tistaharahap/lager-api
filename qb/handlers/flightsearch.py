@@ -1,10 +1,11 @@
-from qb.articles import Article
-from qb.flights.tiket import TiketDotComFlightProvider
 from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
-from operator import itemgetter
+from qb.flights.skyscanner.skyscanner import search_flights
 import datetime
-import asyncio
+import pprint
+
+
+pp = pprint.PrettyPrinter(indent=4)
 
 
 def get_next_weekend():
@@ -25,118 +26,34 @@ def get_next_weekend():
     return (str(next_friday), str(next_sunday))
 
 
-async def get_destination_fares(origin_airport, destination_airport, outbound_date, inbound_date, passengers, tiketdotcom_provider):
-    result = await tiketdotcom_provider.search(origin=origin_airport,
-                                               destination=destination_airport,
-                                               departure_date=outbound_date,
-                                               ret_date=inbound_date,
-                                               adult=passengers.get('adults'))
-    
-    # Hey Tiket, you could design a better API?
-    asyncio.sleep(15)
-
-    result = await tiketdotcom_provider.search(origin=origin_airport,
-                                               destination=destination_airport,
-                                               departure_date=outbound_date,
-                                               ret_date=inbound_date,
-                                               adult=passengers.get('adults'))
-
-    return result
+def normalize_airport(airport):
+    return {
+        'country_name': airport.get('CountryName'),
+        'city_id': airport.get('CityId'),
+        'city_name': airport.get('CityName'),
+        'iata_code': airport.get('IataCode'),
+        'airport_name': airport.get('Name')
+    }
 
 
-async def parse_destinations(origin_airport, airports, dates, passengers, budget, tiketdotcom_provider):
-    result = []
+async def get_content_for_quotes(quotes):
+    for quote in quotes:
+        quote['airports']['destination'] = normalize_airport(quote['airports']['destination'])
+        quote['airports']['origin'] = normalize_airport(quote['airports']['origin'])
 
-    try:
-        outbound_date = dates.get('outbound')
-        inbound_date = dates.get('inbound')
-    except AttributeError:
-        (outbound_date, inbound_date) = get_next_weekend()
-
-    def _assign_flight(row):
-        return {
-            'id': row.get('flight_id'),
-            'airline': {
-                'name': row.get('airlines_name'),
-                'flight_number': row.get('flight_number'),
-                'picture': row.get('image')
-            },
-            'prices': {
-                'adult': int(float(row.get('price_adult'))),
-                'child': int(float(row.get('price_child'))),
-                'infant': int(float(row.get('price_infant')))
-            },
-            'baggage': {
-                'unit': row.get('check_in_baggage_unit'),
-                'value': row.get('check_in_baggage')
-            },
-            'datetime': {
-                'departure': row.get('departure_flight_date'),
-                'arrival': row.get('arrival_flight_date')
-            }
-        }
-
-    def _format_fares(departures, returns):
-        departures = sorted([_assign_flight(row) for row in departures.get('result')], key=lambda e: e['prices']['adult'])
-        returns = sorted([_assign_flight(row) for row in returns.get('result')], key=lambda e: e['prices']['adult'])
-        
-        return (departures, returns)
-
-    def _get_content_from_destination(airport):
-        return {
-            'picture': 'https://static1.squarespace.com/static/5372cd85e4b0bbcc0ca2de9d/53ed02f9e4b0b7e18f4b62eb/53ee694fe4b032360e1f74d5/1408133521826/04-Gili-Trawangan-Lombok-Hotel-Rooms-Facilities-Beach-Beachfront-Ocean-Sun-Chair-White-Sand.jpg?format=2500w',
-            'title': '[STUB] Title',
-            'destination': '[STUB] Destination',
-            'area': airport.get('area_name'),
-            'article': {
-                'author': '[STUB] Aria Rajasa',
-                'body': '[STUB] Article body',
-                'coordinates': {
-                    'latitude': 0.0,
-                    'longitude': 0.0
-                }
-            }
-        }
-
-    for airport in airports:
-        iata_code = airport.get('iata_code')
-
-        fares = await get_destination_fares(origin_airport=origin_airport.get('iata_code'),
-                                            destination_airport=iata_code,
-                                            outbound_date=outbound_date,
-                                            inbound_date=inbound_date,
-                                            passengers=passengers,
-                                            tiketdotcom_provider=tiketdotcom_provider)
-        
-        departures = fares.get('departures')
-        returns = fares.get('returns')
-        if not departures or not returns:
+        destination = await Airport.get_airport_by_iata_code(iata_code=quote['airports']['destination']['iata_code'])
+        if not destination:
+            quote['contents'] = {}
             continue
-
-        outbound = []
-        inbound = []
-        content = _get_content_from_destination(airport=airport)
-
-        (outbound, inbound) = _format_fares(departures, returns)
-        airports = {
-            'origin': origin_airport,
-            'destination': airport
+        
+        quote['contents'] = {
+            'picture': destination.get('image') if destination else '',
+            'description': destination.get('description') if destination else '',
+            'wikipedia_url': 'http://%s' % destination.get('wikipedia_url') if destination else '',
+            'location': destination.get('location')
         }
 
-        result.append({
-            'contents': content,
-            'outbound': outbound,
-            'inbound': inbound,
-            'airports': airports,
-            'cheapest': outbound[0].get('prices').get('adult') + inbound[0].get('prices').get('adult') if outbound and inbound else 0
-        })
-
-    # Filter out prices that are more than 20% in excess or less
-    result = filter(lambda row: int(float(budget) * 0.7) <= row.get('cheapest') <= int(float(budget) * 1.2), result)
-
-    result = sorted(result, key=lambda r: r.get('cheapest'))
-
-    return result
+    return quotes
 
 
 async def handle_flight_search_with_budget(request):
@@ -147,9 +64,17 @@ async def handle_flight_search_with_budget(request):
         'lat': meta.get('origin').get('latitude'),
         'lon': meta.get('origin').get('longitude')
     }
+
+    pp.pprint(request.json)
     
     dates = meta.get('dates')
-    passengers = meta.get('passengers')
+    try:
+        outbound_date = dates.get('outbound')
+        inbound_date = dates.get('inbound')
+        if not outbound_date or not inbound_date:
+            (outbound_date, inbound_date) = get_next_weekend()
+    except AttributeError:
+        (outbound_date, inbound_date) = get_next_weekend()
 
     config = request.json.get('config')
 
@@ -158,21 +83,16 @@ async def handle_flight_search_with_budget(request):
 
     # Nearest Airport for Origin
     origin_airport = await Airport.get_nearest_airport(location=location)
+    pp.pprint(origin_airport)
 
-    # Get destination airports
-    airports = await Airport.geosearch(location=location,
-                                       budget=budget)
+    quotes = await search_flights(token=config.get('skyscanner').get('token'),
+                                  origin=origin_airport,
+                                  destination='anywhere',
+                                  departure_date=outbound_date,
+                                  returning_date=inbound_date,
+                                  budget=budget)
+    quotes = await get_content_for_quotes(quotes=quotes)
 
-    tiketdotcom_provider = TiketDotComFlightProvider(base_url=config.get('tiketdotcom').get('base_url'),
-                                                     token=config.get('tiketdotcom').get('token'))
-
-    destinations = await parse_destinations(origin_airport=origin_airport,
-                                            airports=airports,
-                                            dates=dates,
-                                            passengers=passengers,
-                                            budget=budget,
-                                            tiketdotcom_provider=tiketdotcom_provider)
-
-    return dict(data=destinations)
+    return dict(data=quotes)
 
 

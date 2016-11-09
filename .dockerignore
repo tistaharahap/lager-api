@@ -1,0 +1,5 @@
+*.json
+.git
+env
+esdata
+redis_data

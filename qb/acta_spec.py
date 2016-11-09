@@ -1,6 +1,7 @@
 
 from qb.handlers.flightsearch import handle_flight_search_with_budget
 from qb.handlers.airportsearch import handle_airport_search
+from qb.handlers.attractionsearch import handle_attraction_search
 
 
 async def handle_bookmark_destination(request):
@@ -20,6 +21,17 @@ Verbs = {
             ]
         },
         'handler': handle_flight_search_with_budget
+    },
+    'search-for-attractions': {
+        'actor': 'person',
+        'object': 'attractions',
+        'meta': {
+            'required_fields': [
+                'latitude',
+                'longitude'
+            ]
+        },
+        'handler': handle_attraction_search
     },
     'airport-search': {
         'actor': 'person',
