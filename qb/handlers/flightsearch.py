@@ -67,6 +67,8 @@ async def handle_flight_search_with_budget(request):
     try:
         outbound_date = dates.get('outbound')
         inbound_date = dates.get('inbound')
+        if not outbound_date or not inbound_date:
+            (outbound_date, inbound_date) = get_next_weekend()
     except AttributeError:
         (outbound_date, inbound_date) = get_next_weekend()
 

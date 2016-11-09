@@ -1,6 +1,31 @@
 import requests
 
 
+def normalize_places(place):
+    return {
+        'skyscanner_place_id': place.get('PlaceId'),
+        'skyscanner_country_id': place.get('CountryId'),
+        'name': place.get('PlaceName'),
+        'country': place.get('CountryName')
+    }
+
+
+async def autocomplete_location(token, q, market='ID', currency='IDR', locale='en-US'):
+    url = 'http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0/{}/{}/{}/?query={}&apiKey={}'
+    url = url.format(market, currency, locale, q, token)
+
+    headers = {
+        'Accept': 'application/json'
+    }
+
+    response = requests.get(url, headers=headers)
+    results = response.json()
+    if not results:
+        return []
+
+    return [normalize_places(row) for row in results.get('Places')]
+
+
 async def find_carrier(carrier_id, carriers):
     for carrier in carriers:
         if carrier.get('CarrierId') == carrier_id:
