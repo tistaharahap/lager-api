@@ -46,7 +46,8 @@ async def get_content_for_quotes(quotes):
         quote['contents'] = {
             'picture': destination.get('image') if destination else '',
             'description': destination.get('description') if destination else '',
-            'wikipedia_url': 'http://%s' % destination.get('wikipedia_url') if destination else ''
+            'wikipedia_url': 'http://%s' % destination.get('wikipedia_url') if destination else '',
+            'location': destination.get('location')
         }
 
     return quotes
