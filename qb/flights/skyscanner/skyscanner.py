@@ -108,7 +108,7 @@ async def search_flights(token, origin, destination, departure_date, returning_d
                 'destination': destination_airport
             },
             'dates': {
-                'outboud': departure_date,
+                'outbound': departure_date,
                 'inbound': returning_date
             },
             'referral_link': get_referral_link(token, origin, destination_airport.get('IataCode'), departure_date, returning_date),
