@@ -2,6 +2,10 @@ from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
 from qb.flights.skyscanner.skyscanner import search_flights
 import datetime
+import pprint
+
+
+pp = pprint.PrettyPrinter(indent=4)
 
 
 def get_next_weekend():
@@ -56,6 +60,8 @@ async def handle_flight_search_with_budget(request):
         'lat': meta.get('origin').get('latitude'),
         'lon': meta.get('origin').get('longitude')
     }
+
+    pp.pprint(request.json)
     
     dates = meta.get('dates')
     try:
@@ -71,6 +77,7 @@ async def handle_flight_search_with_budget(request):
 
     # Nearest Airport for Origin
     origin_airport = await Airport.get_nearest_airport(location=location)
+    pp.pprint(origin_airport)
 
     quotes = await search_flights(token=config.get('skyscanner').get('token'),
                                   origin=origin_airport,
