@@ -60,12 +60,12 @@ async def handle_flight_search_with_budget(request):
     meta = request.json.get('meta')
 
     budget = meta.get('number')
-    location = {
-        'lat': meta.get('origin').get('latitude'),
-        'lon': meta.get('origin').get('longitude')
-    }
 
-    pp.pprint(request.json)
+    origin = meta.get('origin')
+    location = {
+        'lat': origin.get('latitude') if origin else None,
+        'lon': origin.get('longitude') if origin else None
+    }
     
     dates = meta.get('dates')
     try:
@@ -81,12 +81,9 @@ async def handle_flight_search_with_budget(request):
     # Get ES Connection
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
-    # Nearest Airport for Origin
-    origin_airport = await Airport.get_nearest_airport(location=location)
-    pp.pprint(origin_airport)
-
+    ip_address = '%s-ip' % request.headers.get('Remote-Addr').split(':')[0]
     quotes = await search_flights(token=config.get('skyscanner').get('token'),
-                                  origin=origin_airport,
+                                  origin=ip_address,
                                   destination='anywhere',
                                   departure_date=outbound_date,
                                   returning_date=inbound_date,

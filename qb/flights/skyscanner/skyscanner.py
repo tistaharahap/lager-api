@@ -39,11 +39,11 @@ async def find_destination(dest_id, places):
 
 
 def get_referral_link(token, origin, destination, departure_date, returning_date):
-    return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin.get('iata_code'), destination, departure_date, returning_date, token) 
+    return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin, destination, departure_date, returning_date, token) 
 
 
 async def search_flights(token, origin, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
-    url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin.get('iata_code'), destination, departure_date, returning_date, token)
+    url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin, destination, departure_date, returning_date, token)
 
     headers = {
         'Accept': 'application/json'
@@ -55,6 +55,9 @@ async def search_flights(token, origin, destination, departure_date, returning_d
         return []
 
     quotes = json.get('Quotes')
+    if not quotes:
+        return []
+        
     quotes = sorted(quotes, key=lambda e: e.get('MinPrice'))
 
     min_price = int(float(budget) * 0.5)

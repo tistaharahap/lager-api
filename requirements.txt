@@ -1,4 +1,4 @@
-sanic
+git+git://github.com/channelcat/sanic.git@master
 gremlinpy
 redis
 hiredis
