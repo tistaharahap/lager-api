@@ -81,8 +81,7 @@ async def handle_flight_search_with_budget(request):
     # Get ES Connection
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
-    ip_address = '%s-ip' % request.headers.get('Remote-Addr').split(':')[0]
-    print('Requesting IP Address: %s' % ip_address)
+    ip_address = '%s-ip' % request.headers.get('X-Real-IP')
     quotes = await search_flights(token=config.get('skyscanner').get('token'),
                                   origin=ip_address,
                                   destination='anywhere',
