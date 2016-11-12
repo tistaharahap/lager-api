@@ -42,7 +42,69 @@ def get_referral_link(token, origin, destination, departure_date, returning_date
     return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin, destination, departure_date, returning_date, token) 
 
 
-async def search_flights(token, origin, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
+async def process_quote(quote, carriers, places, departure_date, returning_date, token, origin):
+    outbound_leg = quote.get('OutboundLeg')
+    if not outbound_leg:
+        return None
+
+    inbound_leg = quote.get('InboundLeg')
+    if not inbound_leg:
+        return None
+
+    outbound_carrier_ids = outbound_leg.get('CarrierIds')
+    if not outbound_carrier_ids:
+        return None
+
+    inbound_carrier_ids = inbound_leg.get('CarrierIds')
+    if not inbound_carrier_ids:
+        return None
+
+    outbound_carrier = await find_carrier(outbound_carrier_ids[0], carriers)
+    inbound_carrier = await find_carrier(inbound_carrier_ids[0], carriers)
+
+    origin_airport = inbound_leg.get('DestinationId')
+    origin_airport = await find_destination(origin_airport, places)
+
+    destination_airport = outbound_leg.get('DestinationId')
+    destination_airport = await find_destination(destination_airport, places)
+
+    destination = {
+        'outbound': {
+            'quote_id': quote.get('QuoteId'),
+            'airline': outbound_carrier.get('Name')
+        },
+        'inbound': {
+            'quote_id': quote.get('QuoteId'),
+            'airline': inbound_carrier.get('Name')
+        },
+        'airports': {
+            'origin': origin_airport,
+            'destination': destination_airport
+        },
+        'dates': {
+            'outbound': departure_date,
+            'inbound': returning_date
+        },
+        'referral_link': get_referral_link(token, origin, destination_airport.get('IataCode'), departure_date, returning_date),
+        'cheapest': quote.get('MinPrice')
+    }
+
+    return destination
+
+
+def filter_quotes(budget, quotes, min_percentage=50, max_percentage=150):
+    min_price = int(float(budget) * min_percentage / 100)
+    max_price = int(float(budget) * max_percentage / 100)
+
+    return filter(lambda q: min_price <= q.get('MinPrice') <= max_price, quotes)
+
+
+async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
+    if not origin or not origin.get('lat') or not origin.get('lon'):
+        origin = ip_address
+    else:
+        origin = '%s,%s-Latlong' % (origin.get('lat'), origin.get('lon'))
+
     url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin, destination, departure_date, returning_date, token)
 
     headers = {
@@ -60,11 +122,11 @@ async def search_flights(token, origin, destination, departure_date, returning_d
         
     quotes = sorted(quotes, key=lambda e: e.get('MinPrice'))
 
-    min_price = int(float(budget) * 0.5)
-    max_price = int(float(budget) * 1.5)
-
-    quotes = filter(lambda q: min_price <= q.get('MinPrice') <= max_price, quotes)
-    json['Quotes'] = quotes
+    # Filter
+    json['Quotes'] = filter_quotes(budget=budget, 
+                                   quotes=quotes,
+                                   min_percentage=30,
+                                   max_percentage=130)
 
     carriers = json.get('Carriers')
     places = json.get('Places')
@@ -72,52 +134,15 @@ async def search_flights(token, origin, destination, departure_date, returning_d
     destinations = []
 
     for quote in quotes:
-        outbound_leg = quote.get('OutboundLeg')
-        if not outbound_leg:
-            continue
+        destination = await process_quote(quote=quote,
+                                          carriers=carriers,
+                                          places=places,
+                                          returning_date=returning_date,
+                                          departure_date=departure_date,
+                                          token=token,
+                                          origin=origin)
 
-        inbound_leg = quote.get('InboundLeg')
-        if not inbound_leg:
-            continue
-
-        outbound_carrier_ids = outbound_leg.get('CarrierIds')
-        if not outbound_carrier_ids:
-            continue
-
-        inbound_carrier_ids = inbound_leg.get('CarrierIds')
-        if not inbound_carrier_ids:
-            continue
-
-        outbound_carrier = await find_carrier(outbound_carrier_ids[0], carriers)
-        inbound_carrier = await find_carrier(inbound_carrier_ids[0], carriers)
-
-        origin_airport = inbound_leg.get('DestinationId')
-        origin_airport = await find_destination(origin_airport, places)
-
-        destination_airport = outbound_leg.get('DestinationId')
-        destination_airport = await find_destination(destination_airport, places)
-
-        destination = {
-            'outbound': {
-                'quote_id': quote.get('QuoteId'),
-                'airline': outbound_carrier.get('Name')
-            },
-            'inbound': {
-                'quote_id': quote.get('QuoteId'),
-                'airline': inbound_carrier.get('Name')
-            },
-            'airports': {
-                'origin': origin_airport,
-                'destination': destination_airport
-            },
-            'dates': {
-                'outbound': departure_date,
-                'inbound': returning_date
-            },
-            'referral_link': get_referral_link(token, origin, destination_airport.get('IataCode'), departure_date, returning_date),
-            'cheapest': quote.get('MinPrice')
-        }
-
-        destinations.append(destination)
+        if destination:
+            destinations.append(destination)
     
     return destinations

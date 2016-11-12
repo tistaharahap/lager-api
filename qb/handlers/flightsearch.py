@@ -66,6 +66,7 @@ async def handle_flight_search_with_budget(request):
         'lat': origin.get('latitude') if origin else None,
         'lon': origin.get('longitude') if origin else None
     }
+    ip_address = '%s-ip' % request.headers.get('X-Real-IP')
     
     dates = meta.get('dates')
     try:
@@ -81,9 +82,10 @@ async def handle_flight_search_with_budget(request):
     # Get ES Connection
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
-    ip_address = '%s-ip' % request.headers.get('X-Real-IP')
+    
     quotes = await search_flights(token=config.get('skyscanner').get('token'),
-                                  origin=ip_address,
+                                  origin=location,
+                                  ip_address=ip_address,
                                   destination='anywhere',
                                   departure_date=outbound_date,
                                   returning_date=inbound_date,
