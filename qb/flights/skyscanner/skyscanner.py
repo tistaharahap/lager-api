@@ -92,41 +92,41 @@ async def process_quote(quote, carriers, places, departure_date, returning_date,
     return destination
 
 
-def filter_quotes(budget, quotes, min_percentage=50, max_percentage=150):
+def filter_quotes(budget, quotes, min_percentage=50, max_percentage=110):
     min_price = int(float(budget) * min_percentage / 100)
     max_price = int(float(budget) * max_percentage / 100)
 
-    return filter(lambda q: min_price <= q.get('MinPrice') <= max_price, quotes)
+    quotes = filter(lambda q: min_price <= q.get('MinPrice') <= max_price, quotes)
+    quotes = sorted(quotes, key=lambda q: q.get('MinPrice'))
+
+    return quotes
 
 
-async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
-    if not origin or not origin.get('lat') or not origin.get('lon'):
-        origin = ip_address
-    else:
-        origin = '%s,%s-Latlong' % (origin.get('lat'), origin.get('lon'))
-
-    url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin, destination, departure_date, returning_date, token)
+async def browse_quotes(origin, destination, departure_date, returning_date, token, market='ID', currency='IDR', language='en-US'):
+    url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/%s/%s/%s/%s/%s/%s/%s?apiKey=%s' % (market, currency, language, origin, destination, departure_date, returning_date, token)
 
     headers = {
         'Accept': 'application/json'
     }
 
-    request = requests.get(url, headers=headers)
-    json = request.json()
+    response = requests.get(url, headers=headers)
+
+    return response.json()
+
+
+async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
+    if not origin:
+        origin = ip_address if ip_address else ''
+    if isinstance(origin, dict):
+        origin = '%s,%s-Latlong' % (origin.get('lat'), origin.get('lon'))
+
+    json = await browse_quotes(origin, destination, departure_date, returning_date, token)
     if not json:
         return []
 
     quotes = json.get('Quotes')
     if not quotes:
         return []
-        
-    quotes = sorted(quotes, key=lambda e: e.get('MinPrice'))
-
-    # Filter
-    json['Quotes'] = filter_quotes(budget=budget, 
-                                   quotes=quotes,
-                                   min_percentage=30,
-                                   max_percentage=130)
 
     carriers = json.get('Carriers')
     places = json.get('Places')
@@ -144,5 +144,11 @@ async def search_flights(token, origin, ip_address, destination, departure_date,
 
         if destination:
             destinations.append(destination)
+
+    # Filter
+    quotes = filter_quotes(budget=budget, 
+                           quotes=quotes,
+                           min_percentage=40,
+                           max_percentage=110)
     
     return destinations
