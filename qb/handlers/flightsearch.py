@@ -56,16 +56,63 @@ async def get_content_for_quotes(quotes):
     return quotes
 
 
+async def get_origin_airport_from_quotes(quotes):
+    if len(quotes) == 0:
+        return None
+
+    iata_code = quotes[0].get('airports').get('origin').get('IataCode')
+    return await Airport.get_airport_by_iata_code(iata_code=iata_code)
+
+
+async def search_more_flights_within_budget(budget, quotes, token, ip_address):
+    if len(quotes) == 0:
+        return quotes
+
+    origin_airport = await get_origin_airport_from_quotes(quotes=quotes)
+    if not origin_airport:
+        return quotes
+
+    destinations = [quote.get('airports').get('destination').get('IataCode') for quote in quotes]
+
+    airports = await Airport.geosearch(location=origin_airport.get('location'),
+                                       budget=budget)
+    airports = filter(lambda a: a in destinations, airports)
+
+    for airport in airports:
+        more_quotes = await search_flights(token=token,
+                                           origin=origin_airport.get('iata_code'),
+                                           ip_address=ip_address,
+                                           destination=airport.get('iata_code'),
+                                           departure_date=quotes[0].get('dates').get('outbound'),
+                                           returning_date=quotes[0].get('dates').get('inbound'),
+                                           budget=budget)
+        for quote in more_quotes:
+            quotes.append(quote)
+
+    return quotes
+
+
+async def filter_quotes(budget, quotes, min_percentage=50, max_percentage=110):
+    min_price = int(float(budget) * min_percentage / 100)
+    max_price = int(float(budget) * max_percentage / 100)
+
+    quotes = filter(lambda q: min_price <= q.get('cheapest') <= max_price, quotes)
+    quotes = sorted(quotes, key=lambda q: q.get('cheapest'))
+
+    return quotes
+
+
 async def handle_flight_search_with_budget(request):
     meta = request.json.get('meta')
 
     budget = meta.get('number')
-    location = {
-        'lat': meta.get('origin').get('latitude'),
-        'lon': meta.get('origin').get('longitude')
-    }
 
-    pp.pprint(request.json)
+    origin = meta.get('origin')
+    location = {
+        'lat': origin.get('latitude') if origin else None,
+        'lon': origin.get('longitude') if origin else None
+    }
+    ip_address = '%s-ip' % request.headers.get('X-Real-IP')
     
     dates = meta.get('dates')
     try:
@@ -81,17 +128,30 @@ async def handle_flight_search_with_budget(request):
     # Get ES Connection
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
-    # Nearest Airport for Origin
-    origin_airport = await Airport.get_nearest_airport(location=location)
-    pp.pprint(origin_airport)
-
+    # Do flight search
     quotes = await search_flights(token=config.get('skyscanner').get('token'),
-                                  origin=origin_airport,
+                                  origin=location,
+                                  ip_address=ip_address,
                                   destination='anywhere',
                                   departure_date=outbound_date,
                                   returning_date=inbound_date,
                                   budget=budget)
+
+    # Widen search
+    if len(quotes) > 0:
+        quotes = await search_more_flights_within_budget(budget=budget,
+                                                         quotes=quotes,
+                                                         token=config.get('skyscanner').get('token'),
+                                                         ip_address=ip_address)
+
+    # Contents (picture, articles, etc)
     quotes = await get_content_for_quotes(quotes=quotes)
+
+    # Filter & Sort
+    quotes = await filter_quotes(budget=budget,
+                                 quotes=quotes,
+                                 min_percentage=33,
+                                 max_percentage=120)
 
     return dict(data=quotes)
 
