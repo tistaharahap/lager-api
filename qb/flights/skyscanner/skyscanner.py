@@ -114,11 +114,20 @@ async def browse_quotes(origin, destination, departure_date, returning_date, tok
     return response.json()
 
 
-async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
-    if not origin:
-        origin = ip_address if ip_address else ''
+def get_origin(origin, ip_address):
     if isinstance(origin, dict):
-        origin = '%s,%s-Latlong' % (origin.get('lat'), origin.get('lon'))
+        lat = origin.get('lat')
+        lon = origin.get('lon')
+
+        if lat and lon:
+            return '%s,%s-Latlong' % (lat, lon)
+
+    return ip_address
+
+
+async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
+    origin = get_origin(origin=origin,
+                        ip_address=ip_address)
 
     json = await browse_quotes(origin, destination, departure_date, returning_date, token)
     if not json:
