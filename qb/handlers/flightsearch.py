@@ -156,11 +156,12 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
         if airport.get('iata_code') in destinations:
             continue
 
-        more_quotes = await tiket_search_flights(origin=origin_airport.get('iata_code'),
-                                                 destination=airport.get('iata_code'),
+        more_quotes = await tiket_search_flights(origin=origin_airport,
+                                                 destination=airport,
                                                  departure_date=departure_date,
                                                  returning_date=returning_date,
-                                                 skyscanner_token=skyscanner_token)
+                                                 skyscanner_token=skyscanner_token,
+                                                 budget=budget)
 
         if more_quotes:
             quotes.append(more_quotes)
