@@ -122,8 +122,10 @@ def get_origin(origin, ip_address):
     #     if lat and lon:
     #         return '%s,%s-Latlong' % (lat, lon)
 
-    if ip_address == '127.0.0.1-ip':
+    if ip_address == '127.0.0.1-ip' or ip_address == 'None-ip':
         ip_address = '66.96.251.154-ip'
+
+    print('IP Address: %s' % ip_address)
 
     return ip_address
 
