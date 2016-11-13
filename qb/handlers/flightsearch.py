@@ -162,6 +162,8 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
                                          adult=1)
         if not more_quotes.get('departures'):
             continue
+        if not more_quotes.get('returns'):
+            continue
 
         quote = await process_destination(departures=more_quotes.get('departures').get('result'),
                                           returns=more_quotes.get('returns').get('result'),
