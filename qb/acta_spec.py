@@ -2,10 +2,7 @@
 from qb.handlers.flightsearch import handle_flight_search_with_budget
 from qb.handlers.airportsearch import handle_airport_search
 from qb.handlers.attractionsearch import handle_attraction_search
-
-
-async def handle_bookmark_destination(request):
-    pass
+from qb.handlers.routesearch import handle_route_search
 
 
 Verbs = {
@@ -43,14 +40,16 @@ Verbs = {
         },
         'handler': handle_airport_search
     },
-    'bookmark-destination': {
+    'route-search': {
         'actor': 'person',
-        'object': 'destination',
+        'object': 'route',
         'meta': {
             'required_fields': [
+                'outbound_date',
+                'inbound_date',
+                'origin',
                 'destination'
             ]
-        },
-        'handler': handle_bookmark_destination
+        }
     }
 }

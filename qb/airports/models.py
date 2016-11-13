@@ -19,6 +19,8 @@ class Airport(DocType):
 
     area_name_suggest = Completion(payloads=True)
 
+    last_search_without_hit = Boolean()
+
     class Meta:
         doc_type = 'airport'
         index = 'airports'
@@ -28,12 +30,12 @@ class Airport(DocType):
         return super().save(**kwargs)
 
     @classmethod
-    async def get_airport_by_iata_code(cls, iata_code):
+    async def get_airport_by_iata_code(cls, iata_code, to_dict=True):
         results = Airport().search().query('match', iata_code=iata_code).execute()
         if not results:
             return None
 
-        return results[0].to_dict()
+        return results[0].to_dict() if to_dict else results[0]
 
     @classmethod
     async def get_suggestions(cls, search_phrase):
@@ -70,7 +72,7 @@ class Airport(DocType):
             'location': location
         }
 
-        results = Airport().search().filter('geo_distance_range', **filter_args).scan()
+        results = Airport().search().query('match', last_search_without_hit=False).filter('geo_distance_range', **filter_args).scan()
         
         return [row.to_dict() for row in results]
 
@@ -81,13 +83,19 @@ def get_distances_from_budget(budget):
 
     if 0 < budget <= 1500000:
         distances = (100, 1000)
-    elif 1500000 < budget <= 3500000:
-        distances = (1000, 3000)
-    elif 3500000 < budget <= 5000000:
-        distances = (3000, 4000)
-    elif 5000000 < budget < 8000000:
-        distances = (4000, 8000)
-    elif budget > 8000000:
-        distances = (8000, 15000)
+    elif 1500000 < budget <= 2000000:
+        distances = (800, 1250)
+    elif 2000000 < budget <= 3000000:
+        distances = (1000, 1750)
+    elif 3000000 < budget <= 4000000:
+        distances = (1500, 2250)
+    elif 4000000 < budget <= 5000000:
+        distances = (2000, 2750)
+    elif 5000000 < budget <= 6000000:
+        distances = (2500, 3250)
+    elif 6000000 < budget <= 7000000:
+        distances = (3000, 3750)
+    else:
+        distances = (3500, 15000)
 
     return distances

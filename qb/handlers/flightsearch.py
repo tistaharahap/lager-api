@@ -2,6 +2,7 @@ from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
 from qb.flights.skyscanner.skyscanner import search_flights, get_referral_link
 from qb.flights.tiket.tiketdotcom import TiketDotComFlightProvider
+from qb.flights.tiket.tiketweb import search_flights as tiket_search_flights
 import datetime
 import pprint
 import asyncio
@@ -120,6 +121,13 @@ async def process_destination(departures, returns, skyscanner_token):
     return destination
 
 
+async def mark_bad_airport(iata_code):
+    print('Marking %s as bad airport' % iata_code)
+
+    airport = await Airport.get_airport_by_iata_code(iata_code=iata_code, to_dict=False)
+    airport.update(last_search_without_hit=True)
+
+
 async def search_more_flights_within_budget(budget, quotes, token, base_url, skyscanner_token):
     if len(quotes) == 0:
         return quotes
@@ -137,6 +145,7 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
 
     airports = await Airport.geosearch(location=origin_airport.get('location'),
                                        budget=budget)
+    print('Airports found: %s' % len(airports))
 
     tiket = TiketDotComFlightProvider(base_url=base_url,
                                       token=token)
@@ -147,29 +156,18 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
         if airport.get('iata_code') in destinations:
             continue
 
-        more_quotes = await tiket.search(origin=origin_airport.get('iata_code'),
-                                         destination=airport.get('iata_code'),
-                                         departure_date=departure_date,
-                                         ret_date=returning_date,
-                                         adult=1)
-        # Oh tiket...
-        asyncio.sleep(15)
+        more_quotes = await tiket_search_flights(origin=origin_airport.get('iata_code'),
+                                                 destination=airport.get('iata_code'),
+                                                 departure_date=departure_date,
+                                                 returning_date=returning_date,
+                                                 skyscanner_token=skyscanner_token)
 
-        more_quotes = await tiket.search(origin=origin_airport.get('iata_code'),
-                                         destination=airport.get('iata_code'),
-                                         departure_date=departure_date,
-                                         ret_date=returning_date,
-                                         adult=1)
-        if not more_quotes.get('departures'):
-            continue
-        if not more_quotes.get('returns'):
+        if more_quotes:
+            quotes.append(more_quotes)
             continue
 
-        quote = await process_destination(departures=more_quotes.get('departures').get('result'),
-                                          returns=more_quotes.get('returns').get('result'),
-                                          skyscanner_token=skyscanner_token)
-
-        quotes.append(quote)
+        # Mark bad airport
+        await mark_bad_airport(airport.get('iata_code'))
 
     return quotes
 
@@ -233,7 +231,7 @@ async def handle_flight_search_with_budget(request):
     # Filter & Sort
     quotes = await filter_quotes(budget=budget,
                                  quotes=quotes,
-                                 min_percentage=33,
+                                 min_percentage=50,
                                  max_percentage=120)
 
     return dict(data=quotes)
