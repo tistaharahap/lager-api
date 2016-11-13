@@ -127,6 +127,8 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
     origin_airport = await get_origin_airport_from_quotes(quotes=quotes)
     if not origin_airport:
         return quotes
+    if origin_airport.get('CountryName') != 'Indonesia':
+        return quotes
 
     destinations = [quote.get('airports').get('destination').get('IataCode') for quote in quotes]
 
@@ -141,7 +143,7 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
     for airport in airports:
         if airport.get('iata_code') in destinations:
             continue
-        
+
         more_quotes = await tiket.search(origin=origin_airport.get('iata_code'),
                                          destination=airport.get('iata_code'),
                                          departure_date=departure_date,
