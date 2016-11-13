@@ -65,12 +65,12 @@ class Airport(DocType):
         distances = get_distances_from_budget(budget=budget)
 
         filter_args = {
-            'from': '{}m'.format(distances[0] * 1000),
-            'to': '{}m'.format(distances[1] * 1000),
+            'from': '{}km'.format(distances[0]),
+            'to': '{}km'.format(distances[1]),
             'location': location
         }
 
-        results = Airport().search().filter('geo_distance_range', **filter_args).execute()
+        results = Airport().search().filter('geo_distance_range', **filter_args).scan()
         
         return [row.to_dict() for row in results]
 
@@ -79,7 +79,9 @@ def get_distances_from_budget(budget):
     budget = int(budget)
     distances = (100, 1000)
 
-    if 1500000 < budget <= 3500000:
+    if 0 < budget <= 1500000:
+        distances = (100, 1000)
+    elif 1500000 < budget <= 3500000:
         distances = (1000, 3000)
     elif 3500000 < budget <= 5000000:
         distances = (3000, 4000)

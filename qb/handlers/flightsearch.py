@@ -95,14 +95,14 @@ async def process_destination(departures, returns, skyscanner_token):
                 'city_name': departure.get('departure_city_name'),
                 'iata_code': departure.get('departure_city'),
                 'country_name': 'not_from_skyscanner',
-                'airport_name': departure.get('arrival_city_name')
+                'airport_name': departure.get('departure_city_name')
             },
             'destination': {
                 'city_id': returning.get('departure_city'),
                 'city_name': returning.get('departure_city_name'),
                 'iata_code': returning.get('departure_city'),
                 'country_name': 'not_from_skyscanner',
-                'airport_name': returning.get('arrival_city_name')
+                'airport_name': returning.get('departure_city_name')
             }
         },
         'dates': {
@@ -153,7 +153,7 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
                                          ret_date=returning_date,
                                          adult=1)
         # Oh tiket...
-        asyncio.sleep(12)
+        asyncio.sleep(15)
 
         more_quotes = await tiket.search(origin=origin_airport.get('iata_code'),
                                          destination=airport.get('iata_code'),
