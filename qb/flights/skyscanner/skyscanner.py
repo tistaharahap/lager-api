@@ -115,12 +115,15 @@ async def browse_quotes(origin, destination, departure_date, returning_date, tok
 
 
 def get_origin(origin, ip_address):
-    if isinstance(origin, dict):
-        lat = origin.get('lat')
-        lon = origin.get('lon')
+    # if isinstance(origin, dict):
+    #     lat = origin.get('lat')
+    #     lon = origin.get('lon')
 
-        if lat and lon:
-            return '%s,%s-Latlong' % (lat, lon)
+    #     if lat and lon:
+    #         return '%s,%s-Latlong' % (lat, lon)
+
+    if ip_address == '127.0.0.1-ip':
+        ip_address = '66.96.251.154-ip'
 
     return ip_address
 
