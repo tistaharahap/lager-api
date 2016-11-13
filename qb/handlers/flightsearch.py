@@ -1,8 +1,10 @@
 from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
-from qb.flights.skyscanner.skyscanner import search_flights
+from qb.flights.skyscanner.skyscanner import search_flights, get_referral_link
+from qb.flights.tiket.tiketdotcom import TiketDotComFlightProvider
 import datetime
 import pprint
+import asyncio
 
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -38,8 +40,15 @@ def normalize_airport(airport):
 
 async def get_content_for_quotes(quotes):
     for quote in quotes:
-        quote['airports']['destination'] = normalize_airport(quote['airports']['destination'])
-        quote['airports']['origin'] = normalize_airport(quote['airports']['origin'])
+        if not quote.get('airports').get('destination').get('iata_code'):
+            quote['airports']['destination'] = normalize_airport(quote['airports']['destination'])
+            quote['airports']['origin'] = normalize_airport(quote['airports']['origin'])
+
+        try:
+            quote['airports']['destination']['iata_code']
+        except KeyError:
+            quote['contents'] = {}
+            continue
 
         destination = await Airport.get_airport_by_iata_code(iata_code=quote['airports']['destination']['iata_code'])
         if not destination:
@@ -64,7 +73,54 @@ async def get_origin_airport_from_quotes(quotes):
     return await Airport.get_airport_by_iata_code(iata_code=iata_code)
 
 
-async def search_more_flights_within_budget(budget, quotes, token, ip_address):
+async def process_destination(departures, returns, skyscanner_token):
+    departures = sorted(departures, key=lambda r: float(r.get('price_value')))
+    returns = sorted(returns, key=lambda r: float(r.get('price_value')))
+
+    departure = departures[0]
+    returning = returns[0]
+
+    destination = {
+        'outbound': {
+            'quote_id': 'not_from_skyscanner',
+            'airline': departure.get('airlines_name')
+        },
+        'inbound': {
+            'quote_id': 'not_from_skyscanner',
+            'airline': returning.get('airlines_name')
+        },
+        'airports': {
+            'origin': {
+                'city_id': departure.get('departure_city'),
+                'city_name': departure.get('departure_city_name'),
+                'iata_code': departure.get('departure_city'),
+                'country_name': 'not_from_skyscanner',
+                'airport_name': departure.get('arrival_city_name')
+            },
+            'destination': {
+                'city_id': returning.get('departure_city'),
+                'city_name': returning.get('departure_city_name'),
+                'iata_code': returning.get('departure_city'),
+                'country_name': 'not_from_skyscanner',
+                'airport_name': returning.get('arrival_city_name')
+            }
+        },
+        'dates': {
+            'outbound': departure.get('departure_flight_date').split(' ')[0],
+            'inbound': returning.get('departure_flight_date').split(' ')[0]
+        },
+        'referral_link': get_referral_link(skyscanner_token, 
+                                           departure.get('departure_city'), 
+                                           returning.get('departure_city'), 
+                                           departure.get('departure_flight_date').split(' ')[0], 
+                                           returning.get('departure_flight_date').split(' ')[0]),
+        'cheapest': int(float(departure.get('price_value'))) + int(float(returning.get('price_value')))
+    }
+
+    return destination
+
+
+async def search_more_flights_within_budget(budget, quotes, token, base_url, skyscanner_token):
     if len(quotes) == 0:
         return quotes
 
@@ -76,18 +132,37 @@ async def search_more_flights_within_budget(budget, quotes, token, ip_address):
 
     airports = await Airport.geosearch(location=origin_airport.get('location'),
                                        budget=budget)
-    airports = filter(lambda a: a in destinations, airports)
+
+    tiket = TiketDotComFlightProvider(base_url=base_url,
+                                      token=token)
+    departure_date = quotes[0].get('dates').get('outbound')
+    returning_date = quotes[0].get('dates').get('inbound')
 
     for airport in airports:
-        more_quotes = await search_flights(token=token,
-                                           origin=origin_airport.get('iata_code'),
-                                           ip_address=ip_address,
-                                           destination=airport.get('iata_code'),
-                                           departure_date=quotes[0].get('dates').get('outbound'),
-                                           returning_date=quotes[0].get('dates').get('inbound'),
-                                           budget=budget)
-        for quote in more_quotes:
-            quotes.append(quote)
+        if airport.get('iata_code') in destinations:
+            continue
+        
+        more_quotes = await tiket.search(origin=origin_airport.get('iata_code'),
+                                         destination=airport.get('iata_code'),
+                                         departure_date=departure_date,
+                                         ret_date=returning_date,
+                                         adult=1)
+        # Oh tiket...
+        asyncio.sleep(12)
+
+        more_quotes = await tiket.search(origin=origin_airport.get('iata_code'),
+                                         destination=airport.get('iata_code'),
+                                         departure_date=departure_date,
+                                         ret_date=returning_date,
+                                         adult=1)
+        if not more_quotes.get('departures'):
+            continue
+
+        quote = await process_destination(departures=more_quotes.get('departures').get('result'),
+                                          returns=more_quotes.get('returns').get('result'),
+                                          skyscanner_token=skyscanner_token)
+
+        quotes.append(quote)
 
     return quotes
 
@@ -141,8 +216,11 @@ async def handle_flight_search_with_budget(request):
     if len(quotes) > 0:
         quotes = await search_more_flights_within_budget(budget=budget,
                                                          quotes=quotes,
-                                                         token=config.get('skyscanner').get('token'),
-                                                         ip_address=ip_address)
+                                                         token=config.get('tiketdotcom').get('token'),
+                                                         base_url=config.get('tiketdotcom').get('base_url'),
+                                                         skyscanner_token=config.get('skyscanner').get('token'))
+
+    pprint.pprint(quotes)
 
     # Contents (picture, articles, etc)
     quotes = await get_content_for_quotes(quotes=quotes)
