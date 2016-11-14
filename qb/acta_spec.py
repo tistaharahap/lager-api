@@ -50,6 +50,7 @@ Verbs = {
                 'origin',
                 'destination'
             ]
-        }
+        },
+        'handler': handle_route_search
     }
 }
