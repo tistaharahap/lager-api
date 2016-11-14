@@ -3,6 +3,7 @@ from qb.handlers.flightsearch import handle_flight_search_with_budget
 from qb.handlers.airportsearch import handle_airport_search
 from qb.handlers.attractionsearch import handle_attraction_search
 from qb.handlers.routesearch import handle_route_search
+from qb.handlers.hotelsearch import handle_hotel_search
 
 
 Verbs = {
@@ -52,5 +53,17 @@ Verbs = {
             ]
         },
         'handler': handle_route_search
+    },
+    'hotel-search': {
+        'actor': 'person',
+        'object': 'hotel',
+        'meta': {
+            'required_fields': [
+                'checkin_date',
+                'checkout_date',
+                'airport'
+            ]
+        },
+        'handler': handle_hotel_search
     }
 }
