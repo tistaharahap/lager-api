@@ -160,8 +160,7 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
                                                  destination=airport,
                                                  departure_date=departure_date,
                                                  returning_date=returning_date,
-                                                 skyscanner_token=skyscanner_token,
-                                                 budget=budget)
+                                                 skyscanner_token=skyscanner_token)
 
         if more_quotes:
             quotes.append(more_quotes)
