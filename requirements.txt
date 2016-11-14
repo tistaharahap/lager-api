@@ -10,3 +10,5 @@ objectpath
 voluptuous
 beautifulsoup4
 lxml
+python-instagram
+requests_oauthlib

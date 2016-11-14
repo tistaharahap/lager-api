@@ -1,9 +1,9 @@
-
 from qb.handlers.flightsearch import handle_flight_search_with_budget
 from qb.handlers.airportsearch import handle_airport_search
 from qb.handlers.attractionsearch import handle_attraction_search
 from qb.handlers.routesearch import handle_route_search
 from qb.handlers.hotelsearch import handle_hotel_search
+from qb.handlers.imagesearch import handle_image_search
 
 
 Verbs = {
@@ -65,5 +65,15 @@ Verbs = {
             ]
         },
         'handler': handle_hotel_search
+    },
+    'image-search': {
+        'actor': 'person',
+        'object': 'location',
+        'meta': {
+            'required_fields': [
+                'airport_iata_code'
+            ]
+        },
+        'handler': handle_image_search
     }
 }

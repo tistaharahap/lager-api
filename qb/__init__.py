@@ -19,6 +19,10 @@ SKYSCANNER_TOKEN = 'ba842744824325399712479687403277'
 
 ES_HOSTS = ['api.travelonbudget.co']
 
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_DB = 7
+
 print('Serving lager..')
 
 # No globals in Sanic, injecting this to every request
@@ -33,6 +37,11 @@ g = {
         },
         'elasticsearch': {
             'hosts': ES_HOSTS
+        },
+        'redis': {
+            'host': REDIS_HOST,
+            'port': REDIS_PORT,
+            'db': REDIS_DB
         }
     }
 }
