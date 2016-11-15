@@ -34,7 +34,7 @@ async def handle_image_search(request):
     if not airport:
         return []
 
-    q = airport.get('area_name')
+    q = '%s places' % airport.get('area_name')
     url = 'https://api.cognitive.microsoft.com/bing/v5.0/images/search?q=%s&count=20&offset=0&mkt=en-us&safeSearch=strict' % (q)
     headers = {
         'Ocp-Apim-Subscription-Key': '8fac5218b8d0448bbfbd07c72a3bbb61',
