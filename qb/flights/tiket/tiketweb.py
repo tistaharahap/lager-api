@@ -5,6 +5,9 @@ import requests
 import json
 
 
+EMPTY_ROUTE = '*empty*'
+
+
 def normalize_airport(airport):
     return {
         "airport_name": airport.get('name'),
@@ -53,6 +56,9 @@ async def search_flights(origin, destination, departure_date, returning_date, sk
     redis_key = build_redis_key(origin.get('iata_code'), destination.get('iata_code'), departure_date, returning_date, adults, children, infants)
     result = redis_conn.get(redis_key)
     if result:
+        if result == EMPTY_ROUTE:
+            return None
+        
         return json.loads(str(result, 'utf-8'))
 
     url = 'http://www.tiket.com/pesawat/cari?d=%s&a=%s&date=%s&ret_date=%s&adult=%s&child=%s&infant=%s'
@@ -69,6 +75,7 @@ async def search_flights(origin, destination, departure_date, returning_date, sk
 
     body = response.text
     if not 'summary_pricetotal' in body:
+        redis_conn.setex(redis_key, 60*60*24, EMPTY_ROUTE)
         return None
 
     tree = BeautifulSoup(body, 'lxml')
@@ -76,6 +83,7 @@ async def search_flights(origin, destination, departure_date, returning_date, sk
     price = tree.find(id='summary_pricetotal').get('rel')
     if not price or int(price) == 0:
         print('No price found')
+        redis_conn.setex(redis_key, 60*60*24, EMPTY_ROUTE)
         return None
 
     try:
@@ -85,6 +93,7 @@ async def search_flights(origin, destination, departure_date, returning_date, sk
         inbound_airline = ' '.join(inbound_airline)
     except AttributeError:
         print('No airline info found')
+        redis_conn.setex(redis_key, 60*60*24, EMPTY_ROUTE)
         return None
 
     print('%s - IDR %s' % (destination.get('iata_code'), price))
