@@ -122,10 +122,10 @@ async def process_destination(departures, returns, skyscanner_token):
 
 
 async def mark_bad_airport(iata_code):
-    print('Marking %s as bad airport' % iata_code)
+    print('Supposedly marking %s as bad airport but not marking it for now' % iata_code)
 
-    airport = await Airport.get_airport_by_iata_code(iata_code=iata_code, to_dict=False)
-    airport.update(last_search_without_hit=True)
+    # airport = await Airport.get_airport_by_iata_code(iata_code=iata_code, to_dict=False)
+    # airport.update(last_search_without_hit=True)
 
 
 async def search_more_flights_within_budget(budget, quotes, token, base_url, skyscanner_token):
