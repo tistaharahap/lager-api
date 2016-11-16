@@ -56,10 +56,11 @@ async def search_flights(origin, destination, departure_date, returning_date, sk
     redis_key = build_redis_key(origin.get('iata_code'), destination.get('iata_code'), departure_date, returning_date, adults, children, infants)
     result = redis_conn.get(redis_key)
     if result:
+        result = str(result, 'utf-8')
         if result == EMPTY_ROUTE:
             return None
         
-        return json.loads(str(result, 'utf-8'))
+        return json.loads(result)
 
     url = 'http://www.tiket.com/pesawat/cari?d=%s&a=%s&date=%s&ret_date=%s&adult=%s&child=%s&infant=%s'
     url = url % (origin.get('iata_code'), destination.get('iata_code'), departure_date, returning_date, adults, children, infants)
