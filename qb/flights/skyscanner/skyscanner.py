@@ -114,13 +114,16 @@ async def browse_quotes(origin, destination, departure_date, returning_date, tok
     return response.json()
 
 
-def get_origin(origin, ip_address):
+def get_origin(origin, ip_address, force_origin_from_skyscanner_place_id=False):
     # if isinstance(origin, dict):
     #     lat = origin.get('lat')
     #     lon = origin.get('lon')
 
     #     if lat and lon:
     #         return '%s,%s-Latlong' % (lat, lon)
+
+    if force_origin_from_skyscanner_place_id:
+        return origin
 
     if ip_address == '127.0.0.1-ip' or ip_address == 'None-ip':
         ip_address = '66.96.251.154-ip'
@@ -131,8 +134,10 @@ def get_origin(origin, ip_address):
 
 
 async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
+    force_origin_from_skyscanner_place_id = True if isinstance(origin, str) and origin.endswith('-sky') else False
     origin = get_origin(origin=origin,
-                        ip_address=ip_address)
+                        ip_address=ip_address,
+                        force_origin_from_skyscanner_place_id=force_origin_from_skyscanner_place_id)
 
     json = await browse_quotes(origin, destination, departure_date, returning_date, token)
     if not json:

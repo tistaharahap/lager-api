@@ -188,10 +188,12 @@ async def handle_flight_search_with_budget(request):
     budget = meta.get('number')
 
     origin = meta.get('origin')
-    location = {
-        'lat': origin.get('latitude') if origin else None,
-        'lon': origin.get('longitude') if origin else None
-    }
+    location = None
+    if isinstance(origin, dict):
+        location = {
+            'lat': origin.get('latitude') if origin else None,
+            'lon': origin.get('longitude') if origin else None
+        }
     ip_address = '%s-ip' % request.headers.get('X-Real-IP')
     
     dates = meta.get('dates')
