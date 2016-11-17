@@ -205,6 +205,8 @@ async def handle_flight_search_with_budget(request):
     except AttributeError:
         (outbound_date, inbound_date) = get_next_weekend()
 
+    print('Search for outbound/inbound: %s - %s' % (outbound_date, inbound_date))
+
     config = request.json.get('config')
 
     # Get ES Connection
@@ -220,12 +222,11 @@ async def handle_flight_search_with_budget(request):
                                   budget=budget)
 
     # Widen search
-    if len(quotes) > 0:
-        quotes = await search_more_flights_within_budget(budget=budget,
-                                                         quotes=quotes,
-                                                         token=config.get('tiketdotcom').get('token'),
-                                                         base_url=config.get('tiketdotcom').get('base_url'),
-                                                         skyscanner_token=config.get('skyscanner').get('token'))
+    quotes = await search_more_flights_within_budget(budget=budget,
+                                                     quotes=quotes,
+                                                     token=config.get('tiketdotcom').get('token'),
+                                                     base_url=config.get('tiketdotcom').get('base_url'),
+                                                     skyscanner_token=config.get('skyscanner').get('token'))
 
     # Contents (picture, articles, etc)
     quotes = await get_content_for_quotes(quotes=quotes)

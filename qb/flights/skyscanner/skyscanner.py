@@ -1,4 +1,7 @@
 import requests
+import pprint
+
+pp = pprint.PrettyPrinter(indent=2)
 
 
 def normalize_places(place):
@@ -140,12 +143,7 @@ async def search_flights(token, origin, ip_address, destination, departure_date,
                         force_origin_from_skyscanner_place_id=force_origin_from_skyscanner_place_id)
 
     json = await browse_quotes(origin, destination, departure_date, returning_date, token)
-    if not json:
-        return []
-
     quotes = json.get('Quotes')
-    if not quotes:
-        return []
 
     carriers = json.get('Carriers')
     places = json.get('Places')
