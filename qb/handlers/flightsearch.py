@@ -17,11 +17,11 @@ def get_next_weekend():
 
     next_friday = None
 
-    if 0 <= weekday <= 3:
+    if 0 <= weekday <= 2:
         next_friday = today + datetime.timedelta(4 - weekday)
-    elif weekday == 4:
-        next_friday = today + datetime.timedelta(7)
-    elif 4 < weekday < 7:
+    elif weekday == 3:
+        next_friday = today + datetime.timedelta(8)
+    elif 4 <= weekday < 7:
         next_friday = today + datetime.timedelta(7) - datetime.timedelta(weekday - 4)
 
     next_sunday = next_friday + datetime.timedelta(2)
