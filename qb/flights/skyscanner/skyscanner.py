@@ -138,6 +138,7 @@ def get_origin(origin, ip_address, force_origin_from_skyscanner_place_id=False):
 
 async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
     force_origin_from_skyscanner_place_id = True if isinstance(origin, str) and origin.endswith('-sky') else False
+    print('Force origin %s: %s' % (origin, force_origin_from_skyscanner_place_id))
     origin = get_origin(origin=origin,
                         ip_address=ip_address,
                         force_origin_from_skyscanner_place_id=force_origin_from_skyscanner_place_id)

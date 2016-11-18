@@ -138,8 +138,8 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
 
     print('Search more results for country: %s' % origin_airport.get('country'))
 
-    if origin_airport.get('country') != 'Indonesia':
-        return quotes
+    # if origin_airport.get('country') != 'Indonesia':
+    #     return quotes
 
     destinations = [quote.get('airports').get('destination').get('IataCode') for quote in quotes]
 
@@ -188,7 +188,7 @@ async def handle_flight_search_with_budget(request):
     budget = meta.get('number')
 
     origin = meta.get('origin')
-    location = None
+    location = origin
     if isinstance(origin, dict):
         location = {
             'lat': origin.get('latitude') if origin else None,
