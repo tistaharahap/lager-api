@@ -128,7 +128,7 @@ async def mark_bad_airport(iata_code):
     # airport.update(last_search_without_hit=True)
 
 
-async def search_more_flights_within_budget(budget, quotes, token, base_url, skyscanner_token):
+async def search_more_flights_within_budget(budget, quotes, token, base_url, skyscanner_token, market, currency, language):
     if len(quotes) == 0:
         return quotes
 
@@ -136,10 +136,10 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
     if not origin_airport:
         return quotes
 
-    print('Search more results for country: %s' % origin_airport.get('country'))
+    if origin_airport.get('country') != 'Indonesia':
+        return quotes
 
-    # if origin_airport.get('country') != 'Indonesia':
-    #     return quotes
+    print('Search more results for country: %s' % origin_airport.get('country'))
 
     destinations = [quote.get('airports').get('destination').get('IataCode') for quote in quotes]
 
@@ -160,7 +160,10 @@ async def search_more_flights_within_budget(budget, quotes, token, base_url, sky
                                                  destination=airport,
                                                  departure_date=departure_date,
                                                  returning_date=returning_date,
-                                                 skyscanner_token=skyscanner_token)
+                                                 skyscanner_token=skyscanner_token,
+                                                 market=market,
+                                                 currency=currency,
+                                                 language=language)
 
         if more_quotes:
             quotes.append(more_quotes)
@@ -180,6 +183,28 @@ async def filter_quotes(budget, quotes, min_percentage=50, max_percentage=110):
     quotes = sorted(quotes, key=lambda q: q.get('cheapest'))
 
     return quotes
+
+
+def get_default_locale():
+    return {
+        'country': 'ID',
+        'currency': 'IDR',
+        'language': 'en-US'
+    }
+
+
+def parse_locale(locale):
+    if not locale:
+        return get_default_locale()
+
+    country = locale.get('country')
+    currency = locale.get('currency')
+    language = locale.get('language')
+
+    if not country or not currency or not language:
+        return get_default_locale()
+
+    return locale
 
 
 async def handle_flight_search_with_budget(request):
@@ -209,6 +234,9 @@ async def handle_flight_search_with_budget(request):
 
     config = request.json.get('config')
 
+    # Locale
+    locale = parse_locale(meta.get('locale'))
+
     # Get ES Connection
     get_es_connection(config.get('elasticsearch').get('hosts'))
 
@@ -219,14 +247,20 @@ async def handle_flight_search_with_budget(request):
                                   destination='anywhere',
                                   departure_date=outbound_date,
                                   returning_date=inbound_date,
-                                  budget=budget)
+                                  budget=budget,
+                                  market=locale.get('country'),
+                                  currency=locale.get('currency'),
+                                  language=locale.get('language'))
 
     # Widen search
     quotes = await search_more_flights_within_budget(budget=budget,
                                                      quotes=quotes,
                                                      token=config.get('tiketdotcom').get('token'),
                                                      base_url=config.get('tiketdotcom').get('base_url'),
-                                                     skyscanner_token=config.get('skyscanner').get('token'))
+                                                     skyscanner_token=config.get('skyscanner').get('token'),
+                                                     market=locale.get('country'),
+                                                     currency=locale.get('currency'),
+                                                     language=locale.get('language'))
 
     # Contents (picture, articles, etc)
     quotes = await get_content_for_quotes(quotes=quotes)

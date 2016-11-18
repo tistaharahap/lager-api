@@ -1,7 +1,7 @@
 import requests
 
 
-def resolve_photo(photo):
+async def resolve_photo(photo):
     return {
         'url': 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photoreference=%s&key=AIzaSyDgAOfmll7dUGJ3Et_NJN1MtUMJPitDD8c' % photo.get('photo_reference'),
         'attribution': photo.get('html_attributions')
@@ -22,10 +22,15 @@ async def handle_attraction_search(request):
         if not photos:
             continue
 
+        i = 0
+        for photo in photos:
+            photos[i] = await resolve_photo(photo)
+            i += 1
+
         places.append({
             'location': result.get('geometry').get('location'),
             'name': result.get('name'),
-            'photos': [resolve_photo(photo) for photo in photos] if photos else [],
+            'photos': photos,
             'rating': result.get('rating'),
             'vicinity': result.get('vicinity')
         })

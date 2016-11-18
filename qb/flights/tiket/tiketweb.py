@@ -18,7 +18,7 @@ def normalize_airport(airport):
     }
 
 
-def process_destination(origin, destination, departure_date, returning_date, outbound_airline, inbound_airline, price, skyscanner_token):
+def process_destination(origin, destination, departure_date, returning_date, outbound_airline, inbound_airline, price, skyscanner_token, market, currency, language):
     return {
         'outbound': {
             'quote_id': 'not_from_skyscanner',
@@ -40,20 +40,23 @@ def process_destination(origin, destination, departure_date, returning_date, out
                                            origin.get('iata_code'), 
                                            destination.get('iata_code'), 
                                            departure_date, 
-                                           returning_date),
+                                           returning_date,
+                                           market,
+                                           currency,
+                                           language),
         'cheapest': int(price)
     }
 
 
-def build_redis_key(origin, destination, departure_date, returning_date, adults, children, infants):
-    return '%s#%s#%s#%s#%s#%s#%s' % (origin, destination, departure_date, returning_date, adults, children, infants)
+def build_redis_key(origin, destination, departure_date, returning_date, adults, children, infants, market, currency, language):
+    return '%s#%s#%s#%s#%s#%s#%s#%s#%s#%s' % (origin, destination, departure_date, returning_date, adults, children, infants, market, currency, language)
 
 
-async def search_flights(origin, destination, departure_date, returning_date, skyscanner_token, adults=1, children=0, infants=0):
+async def search_flights(origin, destination, departure_date, returning_date, skyscanner_token, market, currency, language, adults=1, children=0, infants=0):
     redis_conn = redis.StrictRedis(host='127.0.0.1',
                                    port=6379,
                                    db=7)
-    redis_key = build_redis_key(origin.get('iata_code'), destination.get('iata_code'), departure_date, returning_date, adults, children, infants)
+    redis_key = build_redis_key(origin.get('iata_code'), destination.get('iata_code'), departure_date, returning_date, adults, children, infants, market, currency, language)
     result = redis_conn.get(redis_key)
     if result:
         result = str(result, 'utf-8')
@@ -99,7 +102,7 @@ async def search_flights(origin, destination, departure_date, returning_date, sk
 
     print('%s - IDR %s' % (destination.get('iata_code'), price))
 
-    result = process_destination(origin, destination, departure_date, returning_date, outbound_airline, inbound_airline, price, skyscanner_token)
+    result = process_destination(origin, destination, departure_date, returning_date, outbound_airline, inbound_airline, price, skyscanner_token, market, currency, language)
     redis_conn.setex(redis_key, 60*60*24, json.dumps(result))
 
     return result

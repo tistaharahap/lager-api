@@ -41,8 +41,8 @@ async def find_destination(dest_id, places):
             return place
 
 
-def get_referral_link(token, origin, destination, departure_date, returning_date):
-    return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/ID/IDR/en-US/%s/%s/%s/%s?apiKey=%s' % (origin, destination, departure_date, returning_date, token) 
+def get_referral_link(token, origin, destination, departure_date, returning_date, market='ID', currency='IDR', language='en-US'):
+    return 'http://partners.api.skyscanner.net/apiservices/referral/v1.0/%s/%s/%s/%s/%s/%s/%s?apiKey=%s' % (market, currency, language, origin, destination, departure_date, returning_date, token) 
 
 
 async def process_quote(quote, carriers, places, departure_date, returning_date, token, origin):
@@ -107,7 +107,7 @@ def filter_quotes(budget, quotes, min_percentage=50, max_percentage=110):
 
 async def browse_quotes(origin, destination, departure_date, returning_date, token, market='ID', currency='IDR', language='en-US'):
     url = 'http://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/%s/%s/%s/%s/%s/%s/%s?apiKey=%s' % (market, currency, language, origin, destination, departure_date, returning_date, token)
-
+    print('Quotes URL: %s' % url)
     headers = {
         'Accept': 'application/json'
     }
@@ -143,7 +143,7 @@ async def search_flights(token, origin, ip_address, destination, departure_date,
                         ip_address=ip_address,
                         force_origin_from_skyscanner_place_id=force_origin_from_skyscanner_place_id)
 
-    json = await browse_quotes(origin, destination, departure_date, returning_date, token)
+    json = await browse_quotes(origin, destination, departure_date, returning_date, token, market, currency, language)
     quotes = json.get('Quotes')
 
     carriers = json.get('Carriers')
