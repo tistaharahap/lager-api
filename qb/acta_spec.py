@@ -1,4 +1,4 @@
-from qb.handlers.flightsearch import handle_flight_search_with_budget
+from qb.handlers.flightsearch import handle_flight_search_with_budget, handle_flight_search_by_dates
 from qb.handlers.airportsearch import handle_airport_search
 from qb.handlers.attractionsearch import handle_attraction_search
 from qb.handlers.routesearch import handle_route_search
@@ -75,5 +75,18 @@ Verbs = {
             ]
         },
         'handler': handle_image_search
+    },
+    'flight-search-by-dates': {
+        'actor': 'person',
+        'object': 'dates',
+        'meta': {
+            'required_fields': [
+                'outbound_date',
+                'inbound_date',
+                'origin',
+                'destination'
+            ]
+        },
+        'handler': handle_flight_search_by_dates
     }
 }

@@ -1,6 +1,6 @@
 from qb.airports.models import Airport
 from qb.elasticsearch import get_es_connection
-from qb.flights.skyscanner.skyscanner import search_flights, get_referral_link
+from qb.flights.skyscanner.skyscanner import search_flights, get_referral_link, search_by_dates
 from qb.flights.tiket.tiketdotcom import TiketDotComFlightProvider
 from qb.flights.tiket.tiketweb import search_flights as tiket_search_flights
 import datetime
@@ -273,4 +273,28 @@ async def handle_flight_search_with_budget(request):
 
     return dict(data=quotes)
 
+
+async def handle_flight_search_by_dates(request):
+    meta = request.json.get('meta')
+
+    config = request.json.get('config')
+    
+    outbound_date = meta.get('outbound_date')
+    inbound_date = meta.get('inbound_date')
+    origin = meta.get('origin')
+    destination = meta.get('destination')
+
+    # Locale
+    locale = parse_locale(meta.get('locale'))
+
+    quotes = await search_by_dates(token=config.get('skyscanner').get('token'),
+                                   origin=origin,
+                                   destination=destination,
+                                   departure_date=outbound_date,
+                                   returning_date=inbound_date,
+                                   market=locale.get('country'),
+                                   currency=locale.get('currency'),
+                                   language=locale.get('language'))
+
+    return dict(data=quotes)
 

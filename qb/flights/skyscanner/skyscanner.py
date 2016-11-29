@@ -117,6 +117,19 @@ async def browse_quotes(origin, destination, departure_date, returning_date, tok
     return response.json()
 
 
+async def browse_quotes_by_dates(origin, destination, departure_date, returning_date, token, market='ID', currency='IDR', language='en-US'):
+    print(destination)
+    url = 'http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/%s/%s/%s/%s/%s/%s/%s?apiKey=%s' % (market, currency, language, origin, destination, departure_date, returning_date, token)
+    print('Quotes URL: %s' % url)
+    headers = {
+        'Accept': 'application/json'
+    }
+
+    response = requests.get(url, headers=headers)
+
+    return response.json()
+
+
 def get_origin(origin, ip_address, force_origin_from_skyscanner_place_id=False):
     # if isinstance(origin, dict):
     #     lat = origin.get('lat')
@@ -134,6 +147,29 @@ def get_origin(origin, ip_address, force_origin_from_skyscanner_place_id=False):
     print('IP Address: %s' % ip_address)
 
     return ip_address
+
+
+def format_browse_by_dates_quotes(row):
+    return {
+        'price': row.get('Price'),
+        'date': row.get('PartialDate'),
+        'quote_datetime': row.get('QuoteDateTime')
+    }
+
+
+async def search_by_dates(token, origin, destination, departure_date, returning_date, market='ID', currency='IDR', language='en-US'):
+    json = await browse_quotes_by_dates(origin, destination, departure_date, returning_date, token, market, currency, language)
+
+    inbounds = json.get('Dates').get('InboundDates')
+    outbounds = json.get('Dates').get('OutboundDates')
+
+    if not inbounds or not outbounds:
+        return {}
+
+    return {
+        'outbound_dates': [format_browse_by_dates_quotes(outbound) for outbound in outbounds],
+        'inbound_dates': [format_browse_by_dates_quotes(inbound) for inbound in inbounds],
+    }
 
 
 async def search_flights(token, origin, ip_address, destination, departure_date, returning_date, budget, market='ID', currency='IDR', language='en-US'):
