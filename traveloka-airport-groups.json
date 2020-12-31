@@ -1,0 +1,223 @@
+[{
+    "airportGroupId": "00",
+    "name": "Kota Populer",
+    "airports": ["JKTA", "DPS", "SUB", "BDO", "UPG", "KNO", "PDG", "JOG"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "01",
+    "name": "Jawa",
+    "airports": ["BDO", "BWX", "JKTA", "CGK", "HLP", "MLG", "SRG", "SOC", "SUB", "JOG", "JBB"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "02",
+    "name": "Sumatera",
+    "airports": ["BTJ", "TKG", "BTH", "BKS", "GNS", "DJB", "LSW", "KNO", "MEQ", "NTX", "PDG", "PLM", "PGK", "PKU", "FLZ", "DTB", "TJQ", "TNJ", "LLG", "MRB", "SBG", "DUM", "SMG"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "03",
+    "name": "Kalimantan",
+    "airports": ["BPN", "BDJ", "BEJ", "KTG", "KBU", "MLN", "MLK", "NNX", "PKY", "PKN", "PNK", "PSU", "SRI", "SMQ", "SQG", "TJS", "TRK", "TBM", "SGQ", "BTK", "KPX", "KLK", "PXC"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "04",
+    "name": "Sulawesi",
+    "airports": ["BUW", "GTO", "KDI", "LUW", "UPG", "MJU", "MDC", "NAH", "PLW", "PUM", "PSJ", "MNA", "WNI", "TLI", "TTR", "BUA", "MXB", "RAQ", "UOL", "YKR", "RPI", "MSA", "SKO", "BXE"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "05",
+    "name": "Bali & Nusa Teng.",
+    "airports": ["ARD", "BMU", "DPS", "ENE", "KOE", "LBJ", "LOP", "MOF", "RTG", "SWQ", "TMC", "WGP", "ABU", "BJW", "LKA"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "06",
+    "name": "Maluku & Papua",
+    "airports": ["AMQ", "BIK", "WUB", "FKQ", "DJJ", "KNG", "LUV", "MKW", "MKQ", "NBX", "SOQ", "TTE", "TIM", "KAZ", "WMX", "AGI", "ZGP", "DEK", "EWE", "ILA", "KNY", "KEP", "KOX", "OKL", "PTW", "SNK", "OTI", "GLX", "SXK"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "10",
+    "name": "Internasional",
+    "airports": ["SIN", "XKLA", "HKG", "BKKA"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "11",
+    "name": "Australia",
+    "airports": ["ADL", "ASP", "BNE", "CNS", "CFS", "DRW", "OOL", "HBA", "MKY", "MCY", "MEL", "PER", "PPP", "SYD"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "12",
+    "name": "Brunei",
+    "airports": ["BWN"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "13",
+    "name": "Kamboja",
+    "airports": ["PNH", "REP"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "14",
+    "name": "China",
+    "airports": ["PEK", "CAN", "HAK", "LJG", "NGB", "TAO", "PVG", "SZX", "CGO", "CKG", "CSX", "HGH", "JMU", "KWL", "NDG", "NKG", "SYX", "WNZ", "WUH", "XIY", "FOC", "KMG", "XMN", "CTU", "SHA"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "15",
+    "name": "Hong Kong",
+    "airports": ["HKG"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "16",
+    "name": "Jepang",
+    "airports": ["TYOA", "NGO", "KIX", "HND", "NRT", "CTS", "TAK", "FUK", "KOJ", "KMJ", "MYJ", "OIT", "OKA", "AKJ", "AOJ", "HIJ", "HKD", "KUH", "MMB", "OBO", "OKJ", "KMQ", "SDJ", "ITM"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "17",
+    "name": "Makau",
+    "airports": ["MFM"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "18",
+    "name": "Malaysia",
+    "airports": ["JHB", "KCH", "XKLA", "KUL", "SZB", "BKI", "LGK", "MKZ", "PEN", "SBW", "AOR", "IPH", "KTE", "KBR", "TGG", "KUA", "BBN", "BKM", "BTU", "KUD", "LBP", "LBU", "LDU", "LGL", "LKH", "LMN", "LWY", "MKM", "MUR", "MYY", "MZV", "ODN", "SDK", "TGC", "TWU"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "19",
+    "name": "Maladewa",
+    "airports": ["MLE"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "20",
+    "name": "Myanmar",
+    "airports": ["RGN", "MDL", "NYT"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "21",
+    "name": "Filipina",
+    "airports": ["BCD", "CEB", "CRK", "ILO", "KLO", "MNL", "PPS", "TAC"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "22",
+    "name": "Singapore",
+    "airports": ["SIN"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "23",
+    "name": "Korea Selatan",
+    "airports": ["ICN", "PUS", "CJU"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "24",
+    "name": "Taiwan",
+    "airports": ["TPE", "RMQ", "KHH"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "25",
+    "name": "Thailand",
+    "airports": ["BKKA", "BKK", "DMK", "CNX", "HDY", "KBV", "HKT", "USM", "URT", "UTH", "CEI", "LPT", "TDX", "THS", "UTP", "KKC", "UBP"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "26",
+    "name": "Timor Leste",
+    "airports": ["DIL"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "27",
+    "name": "Vietnam",
+    "airports": ["HAN", "SGN", "TBB", "UIH", "VDH", "VII", "PQC", "CXR", "HUI", "HPH", "DAD", "BMV", "CAH", "DIN", "DLI", "PXU", "THD", "VCA", "VCL", "VCS", "VKG"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "28",
+    "name": "Arab Saudi",
+    "airports": ["JED"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "29",
+    "name": "India",
+    "airports": ["COK", "DEL", "BOM", "TRZ", "VTZ", "BLR", "HYD", "MAA", "CCU", "GAY", "VNS"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "30",
+    "name": "Bangladesh",
+    "airports": ["CGP", "DAC"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "31",
+    "name": "Nepal",
+    "airports": ["KTM"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "32",
+    "name": "United Emirat Arab",
+    "airports": ["AUH"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "33",
+    "name": "Jerman",
+    "airports": ["FRA"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "34",
+    "name": "Belanda",
+    "airports": ["AMS"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "35",
+    "name": "Prancis",
+    "airports": ["CDG"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "36",
+    "name": "Inggris",
+    "airports": ["LHR"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "37",
+    "name": "Sri Lanka",
+    "airports": ["CMB"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "38",
+    "name": "Selandia Baru",
+    "airports": ["AKL"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}, {
+    "airportGroupId": "39",
+    "name": "Laos",
+    "airports": ["LPQ", "VTE"],
+    "markedAsNew": false,
+    "outboundEntry": false
+}]

@@ -1,0 +1,12 @@
+git+git://github.com/channelcat/sanic.git@master
+gremlinpy
+redis
+hiredis
+requests
+elasticsearch>=2.0.0,<3.0.0
+elasticsearch-dsl>=2.0.0,<3.0.0
+awesome-slugify
+objectpath
+voluptuous
+beautifulsoup4
+lxml

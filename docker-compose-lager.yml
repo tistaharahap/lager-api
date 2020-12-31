@@ -1,0 +1,23 @@
+elasticsearch:
+  image: elasticsearch:2
+  volumes_from:
+    - es_data
+  ports:
+    - 9200:9200
+    - 9300:9300
+redis:
+  image: redis
+  volumes_from:
+    - redis_data
+  ports:
+    - 6379:6379
+es_data:
+  image: elasticsearch:2
+  volumes:
+    - ./esdata:/usr/share/elasticsearch/data
+  entrypoint: /bin/true
+redis_data:
+  image: redis
+  volumes:
+    - ./redis_data:/data
+  entrypoint: /bin/true

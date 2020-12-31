@@ -1,0 +1,11 @@
+{
+    "id_ID": ["DPS", "JKTA", "UPG", "KNO", "SUB", "JOG"],
+    "SG": ["SIN"],
+    "MY": ["JHB", "BKI", "XKLA", "KCH", "PEN"],
+    "TH": ["BKKA", "HDY", "HKT"],
+    "HK-id_MO-CN": ["CAN", "HKG", "MFM", "TPE"],
+    "VN": ["HAN", "SGN"],
+    "id_PH": ["MNL"],
+    "AU": ["MEL", "PER"],
+    "id_KH": ["PNH"]
+}

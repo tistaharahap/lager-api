@@ -121,3 +121,9 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+.dynamodb_wd
+redis_data
+es_data
+.idea
+esdata

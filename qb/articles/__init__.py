@@ -1,0 +1,1 @@
+from qb.articles.models import Article
