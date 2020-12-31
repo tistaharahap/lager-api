@@ -5,5 +5,4 @@ IMMUTABLE_OBJECT_FIELDS = ['actor', 'verb', 'object', 'meta_required_params', 'h
 
 
 class ImmutableObjectBuilder(object):
-
     pass
